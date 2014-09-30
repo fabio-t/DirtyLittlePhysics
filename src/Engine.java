@@ -3,6 +3,9 @@ public class Engine
 {
     final static int MAX_NUM_OF_PARTICLES = 200000;
     
+    Vect3D gravity;
+    double drag;
+    
     int NUM_OF_PARTICLES;
     Particle particles[];
     
@@ -10,6 +13,43 @@ public class Engine
     {
         particles = new Particle[MAX_NUM_OF_PARTICLES];
         NUM_OF_PARTICLES = 0;
+        
+        gravity = new Vect3D(0, 0, -9.81d);
+        drag    = 0.5;
+    }
+    
+    /**
+     * Sets the gravity. It will be directly
+     * added to each component of each particles'
+     * acceleration. The default is Earth's gravity
+     * vector, (0, 0, -9.81)
+     * 
+     * @param gravity
+     */
+    public void setGravity(Vect3D gravity)
+    {
+        this.gravity = gravity;
+    }
+    
+    /**
+     * Sets the coefficient of the linear
+     * drag applied to any moving particle.
+     * It is applied as a force before calculating the
+     * acceleration.
+     * 
+     * Should be a number minor than zero, as it is
+     * defined as:
+     * 
+     * Fd = - b*V
+     * 
+     * where V is the velocity vector of the particle
+     * at each updated.
+     * 
+     * @param drag
+     */
+    public void setDragCoefficient(double drag)
+    {
+        this.drag = drag;
     }
     
     /**
@@ -46,33 +86,42 @@ public class Engine
         }
     }
     
+    private Vect3D getCumulativeForce(Vect3D velocity)
+    {
+        // TODO: only one for now, drag
+        Vect3D force = new Vect3D();
+        
+        force.x = - drag*velocity.x;
+        force.y = - drag*velocity.y;
+        force.z = - drag*velocity.z;
+        
+        return force;
+    }
+    
     /**
      * Verlet Velocity integration
      * @param dt
      */
     public void update(double dt)
     {
+        double drag = 0.5;
+        
         int i;
         
         Particle p;
+        Vect3D force;
         Vect3D acc;
         for (i = 0; i < NUM_OF_PARTICLES; i++)
         {
             p = particles[i];
             acc = p.acc;
             
-            acc.x = 0d;
-            acc.y = 0d;
-            acc.z = -9.81d; // gravity
+            force = getCumulativeForce(p.vel);
+            
+            acc.x = (force.x / p.mass) + gravity.x;
+            acc.y = (force.y / p.mass) + gravity.y;
+            acc.z = (force.z / p.mass) + gravity.z;
         }
-        
-        // TODO: apply forces to
-        // each particle.
-        // Inside, it should
-        // do something like:
-        // acc.x += (force.x / mass)
-        // acc.y += (force.y / mass)
-        // acc.z += (force.z / mass)
  
         // half the delta t, to save
         // a few divisions
