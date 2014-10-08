@@ -1,14 +1,23 @@
+import java.util.Arrays;
+
 
 public class Engine
 {
     // Fluid viscosities likely to be used
-    public final static double AIR_VISCOSITY = 0.01983d;
+    public final static double AIR_VISCOSITY   = 0.00001983d;
     public final static double WATER_VISCOSITY = 0.001d;
     
-    public final static int MAX_NUM_OF_PARTICLES = 200000;
+    // Common densities
+    public final static double AIR_DENSITY   = 1.2d; // pretty dense air
+    public final static double WATER_DENSITY = 1000d;
+    
+    // initial maximumb number of particles, used to
+    // initialise the array
+    public static int MAX_NUM_OF_PARTICLES = 1000;
     
     Vect3D gravity;
     double dragCoefficient;
+    double fluidDensity;
     
     int NUM_OF_PARTICLES;
     Particle particles[];
@@ -20,6 +29,7 @@ public class Engine
         
         setGravity(new Vect3D(0d, 0d, -9.81d));
         setDragCoefficient(AIR_VISCOSITY);
+        setFluidDensity(AIR_DENSITY);
     }
     
     /**
@@ -46,7 +56,19 @@ public class Engine
      */
     public void setDragCoefficient(double fluidViscosity)
     {
-        this.dragCoefficient = 6*Math.PI*fluidViscosity;
+        this.dragCoefficient = Math.pow(6*Math.PI, 2)*fluidViscosity;
+    }
+    
+    /**
+     * The density of the fluid the particles swim into.
+     * It's used for the buoyancy, ie the reduction in
+     * gravitational force when falling into a fluid.
+     * 
+     * @param fluidDensity in kg/m^3
+     */
+    public void setFluidDensity(double fluidDensity)
+    {
+        this.fluidDensity = fluidDensity;
     }
     
     /**
@@ -56,8 +78,16 @@ public class Engine
      */
     public void addParticle(Particle p)
     {
-        if (NUM_OF_PARTICLES > MAX_NUM_OF_PARTICLES || p == null)
+        if (p == null)
             return;
+        
+        if (NUM_OF_PARTICLES >= MAX_NUM_OF_PARTICLES)
+        {
+            MAX_NUM_OF_PARTICLES *= 2;
+            
+            // TODO: check heap exception
+            particles = Arrays.copyOf(particles, MAX_NUM_OF_PARTICLES);
+        }
                 
         particles[NUM_OF_PARTICLES++] = p;
     }
@@ -86,12 +116,25 @@ public class Engine
     private Vect3D getCumulativeForce(Particle p)
     {
         Vect3D force = new Vect3D();
-     
-        // Stoke's Law (fluid drag force)
-        force.x = - dragCoefficient*p.radius*p.vel.x;
-        force.y = - dragCoefficient*p.radius*p.vel.y;
-        force.z = - dragCoefficient*p.radius*p.vel.z;
         
+        double v3x = p.vel.x * p.vel.x * p.vel.x;
+        double v3y = p.vel.y * p.vel.y * p.vel.y;
+        double v3z = p.vel.z * p.vel.z * p.vel.z;
+     
+        // Experimentally found mixture of Stoke's Law and
+        // classic quadric drag. Yields meaningful terminal velocities
+        // using "real values". The crucial bit here is the
+        // cubed velocity, as Stoke's Law alone (so called linear drag)
+        // gives crazyly high values for any particle bigger than a finger nail.
+        // The real drag function uses squared velocity and the "drag coefficient"
+        // that, unlike our constant here, is dependent on the Reynolds number.
+        // Guess what? The reynolds number is proportional to velocity to.
+        // Hence the cubed velocity. Feel free to play with it but make sure
+        // you double check with real values and a good terminal velocity calculator.
+        force.x = - dragCoefficient * p.radius * v3x;
+        force.y = - dragCoefficient * p.radius * v3y;
+        force.z = - dragCoefficient * p.radius * v3z;
+                
         return force;
     }
     
@@ -129,7 +172,9 @@ public class Engine
      */
     public void update(double dt)
     {
-        // half the delta t, to save
+        Vect3D netGravity = new Vect3D();
+        
+        // halve the delta t, to save
         // a few divisions
         double dt2 = dt / 2d;
         
@@ -145,12 +190,20 @@ public class Engine
             vel = p.vel;
             acc = p.acc;
             
+            // Gravity must be corrected by the buoyancy.
+            // Reference: http://lorien.ncl.ac.uk/ming/particle/cpe124p2.html
+            // Note: normally this would only make sense for the "z" dimension,
+            // but who are we to limit your creativity?
+            netGravity.x = gravity.x * ((p.density - fluidDensity) / p.density);
+            netGravity.y = gravity.y * ((p.density - fluidDensity) / p.density);
+            netGravity.z = gravity.z * ((p.density - fluidDensity) / p.density);
+            
             force = getCumulativeForce(p);
             
-            acc.x = (force.x / p.mass) + gravity.x;
-            acc.y = (force.y / p.mass) + gravity.y;
-            acc.z = (force.z / p.mass) + gravity.z;
-            
+            acc.x = (force.x / p.mass) + netGravity.x;
+            acc.y = (force.y / p.mass) + netGravity.y;
+            acc.z = (force.z / p.mass) + netGravity.z;
+                        
             pos.x += dt * (vel.x + (dt2 * acc.x));
             pos.y += dt * (vel.y + (dt2 * acc.y));
             pos.z += dt * (vel.z + (dt2 * acc.z));
@@ -158,12 +211,12 @@ public class Engine
             vel.x += dt * acc.x;
             vel.y += dt * acc.y;
             vel.z += dt * acc.z;
-            
+                        
             force = getCumulativeForce(p);
             
-            acc.x = -((force.x / p.mass) + gravity.x) + acc.x;
-            acc.y = -((force.y / p.mass) + gravity.y) + acc.y;
-            acc.z = -((force.z / p.mass) + gravity.z) + acc.z;
+            acc.x = -((force.x / p.mass) + netGravity.x) + acc.x;
+            acc.y = -((force.y / p.mass) + netGravity.y) + acc.y;
+            acc.z = -((force.z / p.mass) + netGravity.z) + acc.z;
             
             vel.x += dt2 * acc.x;
             vel.y += dt2 * acc.y;
@@ -177,10 +230,16 @@ public class Engine
         
         Engine w = new Engine();
         
+        w.setDragCoefficient(WATER_VISCOSITY);
+        w.setFluidDensity(WATER_DENSITY);
+       
         Particle p = new Particle();
+        p.setMass(70d);
+        p.setRadius(0.2505887894d);
+        System.out.println("Mass: " + p.mass + ", Radius: " + p.radius + ", Density: " + p.density);
         p.vel.x = 1d;
-        p.vel.y = 0d;
-        p.vel.z = -1d;
+        p.vel.y = -1d;
+        p.vel.z = 0d;
         System.out.println("First particle: initial values");
         System.out.println("Pos: " + p.pos.x + " " + p.pos.y + " " + p.pos.z);
         System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
@@ -191,10 +250,20 @@ public class Engine
         System.out.println("Pos: " + p.pos.x + " " + p.pos.y + " " + p.pos.z);
         System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
         System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
+        w.update(STEP);
+        System.out.println("After 1 step (" + STEP + " seconds):");
+        System.out.println("Pos: " + p.pos.x + " " + p.pos.y + " " + p.pos.z);
+        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
+        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
+        w.update(STEP);
+        System.out.println("After 1 step (" + STEP + " seconds):");
+        System.out.println("Pos: " + p.pos.x + " " + p.pos.y + " " + p.pos.z);
+        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
+        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
         
         long time1 = System.currentTimeMillis();
         System.out.print("Adding particles.. ");
-        for (int i = 0; i < 100000; i++)
+        for (int i = 0; i < 200000; i++)
         {
             Particle p2 = new Particle();
             p2.vel.x = 1d;
@@ -205,7 +274,7 @@ public class Engine
         
         time1 = System.currentTimeMillis();
         System.out.print("Moving forward the simulation.. ");
-        for (double t = 0d; t < 100d; t = t + STEP)
+        for (double t = 0d; t < 1d; t = t + STEP)
         {
             w.update(STEP);
         }
@@ -218,7 +287,7 @@ public class Engine
         
         time1 = System.currentTimeMillis();
         System.out.print("Moving forward the simulation.. ");
-        for (double t = 0d; t < 100d; t = t + STEP)
+        for (double t = 0d; t < 10d; t = t + STEP)
         {
             w.update(STEP);
         }
@@ -231,7 +300,7 @@ public class Engine
         
         time1 = System.currentTimeMillis();
         System.out.print("Moving forward the simulation.. ");
-        for (double t = 0d; t < 100d; t = t + STEP)
+        for (double t = 0d; t < 10d; t = t + STEP)
         {
             w.update(STEP);
         }
@@ -244,7 +313,7 @@ public class Engine
         
         time1 = System.currentTimeMillis();
         System.out.print("Moving forward the simulation.. ");
-        for (double t = 0d; t < 1000d; t = t + STEP)
+        for (double t = 0d; t < 10d; t = t + STEP)
         {
             w.update(STEP);
         }
