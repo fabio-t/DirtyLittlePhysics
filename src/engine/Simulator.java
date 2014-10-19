@@ -1,7 +1,36 @@
+/**
+ * Copyright 2014 Fabio Ticconi
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package engine;
+
 import java.util.Arrays;
 
+import utils.Vect3D;
 
+/**
+ * Entry point for the engine. Simulates the movement of all
+ * added particles by taking into consideration the properties of the
+ * cell they are into. It uses Verlet Integration for fast and accurate simulation
+ * of even velocity-dependent forces (like drag).
+ * 
+ * <br /><br />
+ * 
+ * <b>This class is NOT Thread-safe</b>.
+ *
+ * @author Fabio Ticconi
+ */
 public class Simulator
 {
     // Fluid viscosities likely to be used
@@ -73,7 +102,7 @@ public class Simulator
     }
     
     /**
-     * Adds a new particle to the simulator.
+     * Adds a new particle to the simulator.<br />
      * O(1)
      * @param p
      */
@@ -95,7 +124,7 @@ public class Simulator
     
     /**
      * Removes a particle from the simulator,
-     * if it was there.
+     * if it was there. <br />
      * O(N)
      * @param p
      */
@@ -157,7 +186,7 @@ public class Simulator
      * part, where: <br />
      * velocity += timestep * (newAcceleration - acceleration) / 2;
      * <br />should be: <br />
-     * velocity += timestep * (acceleration - newAcceleration) / 2;</b><br /><br />
+     * velocity += timestep * (acceleration - newAcceleration) / 2;</b>
      * 
      * <br /><br />
      * 
