@@ -13,7 +13,7 @@ public class Engine
     
     // initial maximumb number of particles, used to
     // initialise the array
-    public static int MAX_NUM_OF_PARTICLES = 1000;
+    public int MAX_NUM_OF_PARTICLES = 1000;
     
     Vect3D gravity;
     double dragCoefficient;
@@ -56,7 +56,7 @@ public class Engine
      */
     public void setDragCoefficient(double fluidViscosity)
     {
-        this.dragCoefficient = Math.pow(6*Math.PI, 2)*fluidViscosity;
+        this.dragCoefficient = Math.pow(6.0 * Math.PI, 2.0)*fluidViscosity;
     }
     
     /**
@@ -173,6 +173,7 @@ public class Engine
     public void update(double dt)
     {
         Vect3D netGravity = new Vect3D();
+        Vect3D acc = new Vect3D();
         
         // halve the delta t, to save
         // a few divisions
@@ -180,7 +181,6 @@ public class Engine
         
         Particle p;
         Vect3D force;
-        Vect3D acc;
         Vect3D vel;
         Vect3D pos;
         for (int i = 0; i < NUM_OF_PARTICLES; i++)
@@ -188,7 +188,6 @@ public class Engine
             p = particles[i];
             pos = p.pos;
             vel = p.vel;
-            acc = p.acc;
             
             // Gravity must be corrected by the buoyancy.
             // Reference: http://lorien.ncl.ac.uk/ming/particle/cpe124p2.html
@@ -214,13 +213,19 @@ public class Engine
                         
             force = getCumulativeForce(p);
             
-            acc.x = -((force.x / p.mass) + netGravity.x) + acc.x;
-            acc.y = -((force.y / p.mass) + netGravity.y) + acc.y;
-            acc.z = -((force.z / p.mass) + netGravity.z) + acc.z;
+            acc.x -= (force.x / p.mass) + netGravity.x;
+            acc.y -= (force.y / p.mass) + netGravity.y;
+            acc.z -= (force.z / p.mass) + netGravity.z;
             
             vel.x += dt2 * acc.x;
             vel.y += dt2 * acc.y;
             vel.z += dt2 * acc.z;
+            
+            // FIXME: kept only for debug,
+            // soon the acceleration should be removed from the Particle class
+            p.acc.x = acc.x;
+            p.acc.y = acc.y;
+            p.acc.z = acc.z;
         }
     }
     
@@ -229,9 +234,6 @@ public class Engine
         final double STEP = 0.01d;
         
         Engine w = new Engine();
-        
-        w.setDragCoefficient(WATER_VISCOSITY);
-        w.setFluidDensity(WATER_DENSITY);
        
         Particle p = new Particle();
         p.setMass(70d);

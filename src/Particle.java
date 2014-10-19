@@ -53,6 +53,6 @@ public class Particle
     
     private double sphereDensity(double mass, double radius)
     {
-        return mass / ((4d/3d)*Math.PI*Math.pow(radius, 3d));
+        return (mass * 3d) / (4d * Math.PI * Math.pow(radius, 3d));
     }
 }
