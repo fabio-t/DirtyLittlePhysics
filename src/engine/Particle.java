@@ -1,3 +1,7 @@
+package engine;
+
+import utils.Maths;
+
 
 /**
  * Particle class, including movement vectors and size/weight properties.
@@ -21,7 +25,7 @@ public class Particle
     {
         this.mass    = 1d;
         this.radius  = 1d;
-        this.density = sphereDensity(mass, radius);
+        this.density = Maths.sphereDensity(mass, radius);
         
         this.pos = new Vect3D();
         this.vel = new Vect3D();
@@ -32,7 +36,7 @@ public class Particle
     {
         this.mass    = mass;
         this.radius  = radius;
-        this.density = sphereDensity(mass, radius);
+        this.density = Maths.sphereDensity(mass, radius);
         
         this.pos = pos;
         this.vel = vel;
@@ -42,17 +46,12 @@ public class Particle
     public void setMass(double mass)
     {
         this.mass = mass;
-        this.density = sphereDensity(mass, radius);
+        this.density = Maths.sphereDensity(mass, radius);
     }
     
     public void setRadius(double radius)
     {
         this.radius = radius;
-        this.density = sphereDensity(mass, radius);
-    }
-    
-    private double sphereDensity(double mass, double radius)
-    {
-        return (mass * 3d) / (4d * Math.PI * Math.pow(radius, 3d));
+        this.density = Maths.sphereDensity(mass, radius);
     }
 }

@@ -1,7 +1,8 @@
+package engine;
 import java.util.Arrays;
 
 
-public class Engine
+public class Simulator
 {
     // Fluid viscosities likely to be used
     public final static double AIR_VISCOSITY   = 0.00001983d;
@@ -22,7 +23,7 @@ public class Engine
     int NUM_OF_PARTICLES;
     Particle particles[];
     
-    public Engine()
+    public Simulator()
     {
         particles = new Particle[MAX_NUM_OF_PARTICLES];
         NUM_OF_PARTICLES = 0;
@@ -72,7 +73,7 @@ public class Engine
     }
     
     /**
-     * Adds a new particle to the engine.
+     * Adds a new particle to the simulator.
      * O(1)
      * @param p
      */
@@ -93,7 +94,7 @@ public class Engine
     }
     
     /**
-     * Removes a particle from the engine,
+     * Removes a particle from the simulator,
      * if it was there.
      * O(N)
      * @param p
@@ -114,13 +115,7 @@ public class Engine
     }
     
     private Vect3D getCumulativeForce(Particle p)
-    {
-        Vect3D force = new Vect3D();
-        
-        double v3x = p.vel.x * p.vel.x * p.vel.x;
-        double v3y = p.vel.y * p.vel.y * p.vel.y;
-        double v3z = p.vel.z * p.vel.z * p.vel.z;
-     
+    {     
         // Experimentally found mixture of Stoke's Law and
         // classic quadric drag. Yields meaningful terminal velocities
         // using "real values". The crucial bit here is the
@@ -131,9 +126,12 @@ public class Engine
         // Guess what? The reynolds number is proportional to velocity to.
         // Hence the cubed velocity. Feel free to play with it but make sure
         // you double check with real values and a good terminal velocity calculator.
-        force.x = - dragCoefficient * p.radius * v3x;
-        force.y = - dragCoefficient * p.radius * v3y;
-        force.z = - dragCoefficient * p.radius * v3z;
+        
+        Vect3D force = new Vect3D(p.vel.x * p.vel.x * p.vel.x,
+                                  p.vel.y * p.vel.y * p.vel.y,
+                                  p.vel.z * p.vel.z * p.vel.z);
+        
+        force.mul(- dragCoefficient * p.radius);
                 
         return force;
     }
@@ -174,6 +172,7 @@ public class Engine
     {
         Vect3D netGravity = new Vect3D();
         Vect3D acc = new Vect3D();
+        double buoyancy;
         
         // halve the delta t, to save
         // a few divisions
@@ -193,12 +192,18 @@ public class Engine
             // Reference: http://lorien.ncl.ac.uk/ming/particle/cpe124p2.html
             // Note: normally this would only make sense for the "z" dimension,
             // but who are we to limit your creativity?
-            netGravity.x = gravity.x * ((p.density - fluidDensity) / p.density);
-            netGravity.y = gravity.y * ((p.density - fluidDensity) / p.density);
-            netGravity.z = gravity.z * ((p.density - fluidDensity) / p.density);
+            buoyancy = ((p.density - fluidDensity) / p.density);
+            netGravity.x = gravity.x * buoyancy;
+            netGravity.y = gravity.y * buoyancy;
+            netGravity.z = gravity.z * buoyancy;
             
             force = getCumulativeForce(p);
             
+            // as the Gravitational force is equal to m*g,
+            // we can add it after the cumulative force has been
+            // converted to acceleration - in this way, we store it
+            // as "g", independent of mass, and then add it to the
+            // newly found acceleration.            
             acc.x = (force.x / p.mass) + netGravity.x;
             acc.y = (force.y / p.mass) + netGravity.y;
             acc.z = (force.z / p.mass) + netGravity.z;
@@ -212,7 +217,7 @@ public class Engine
             vel.z += dt * acc.z;
                         
             force = getCumulativeForce(p);
-            
+                        
             acc.x -= (force.x / p.mass) + netGravity.x;
             acc.y -= (force.y / p.mass) + netGravity.y;
             acc.z -= (force.z / p.mass) + netGravity.z;
@@ -223,9 +228,7 @@ public class Engine
             
             // FIXME: kept only for debug,
             // soon the acceleration should be removed from the Particle class
-            p.acc.x = acc.x;
-            p.acc.y = acc.y;
-            p.acc.z = acc.z;
+            p.acc.assign(acc);
         }
     }
     
@@ -233,7 +236,7 @@ public class Engine
     {
         final double STEP = 0.01d;
         
-        Engine w = new Engine();
+        Simulator w = new Simulator();
        
         Particle p = new Particle();
         p.setMass(70d);
@@ -265,7 +268,7 @@ public class Engine
         
         long time1 = System.currentTimeMillis();
         System.out.print("Adding particles.. ");
-        for (int i = 0; i < 200000; i++)
+        for (int i = 0; i < 100000; i++)
         {
             Particle p2 = new Particle();
             p2.vel.x = 1d;

@@ -1,3 +1,4 @@
+package engine;
 import static org.junit.Assert.*;
 
 import org.junit.After;
@@ -7,32 +8,32 @@ import org.junit.Test;
 
 public class EngineTest
 {
-    protected Engine engine;
+    protected Simulator simulator;
         
     @Before
     public void setUp() throws Exception
     {
-        engine = new Engine();
+        simulator = new Simulator();
     }
     
     @After
     public void tearDown() throws Exception
     {
-        engine = null;
+        simulator = null;
     }
     
     @Test
     public final void testAddParticle()
     {
-        int particles = engine.NUM_OF_PARTICLES;
+        int particles = simulator.NUM_OF_PARTICLES;
         
         addParticles(1);
         
-        assertEquals(engine.NUM_OF_PARTICLES, particles + 1);
+        assertEquals(simulator.NUM_OF_PARTICLES, particles + 1);
         
         addParticles(100000);
         
-        assertEquals(engine.NUM_OF_PARTICLES, particles + 1 + 100000);
+        assertEquals(simulator.NUM_OF_PARTICLES, particles + 1 + 100000);
     }
     
     @Test
@@ -40,7 +41,7 @@ public class EngineTest
     {        
         removeAllParticles();
         
-        assertEquals(engine.NUM_OF_PARTICLES, 0);
+        assertEquals(simulator.NUM_OF_PARTICLES, 0);
     }
     
     @Test
@@ -56,17 +57,17 @@ public class EngineTest
         // the array shouldn't increase
         addParticles(999);
         
-        assert(engine.particles.length == 1000);
+        assert(simulator.particles.length == 1000);
         
         // exactly 1000 particles, it shouldn't increase yet
         addParticles(1);
         
-        assert(engine.particles.length == 1000);
+        assert(simulator.particles.length == 1000);
                 
         // overflow, the array should have doubled in size
         addParticles(1);
         
-        assert(engine.particles.length == 2000);
+        assert(simulator.particles.length == 2000);
         
         removeAllParticles();
     }
@@ -80,15 +81,15 @@ public class EngineTest
         for (int i = 0; i < n; i++)
         {
             p = new Particle();
-            engine.addParticle(p);
+            simulator.addParticle(p);
         }
     }
     
     private void removeAllParticles()
     {
-        for (Particle p : engine.particles)
+        for (Particle p : simulator.particles)
         {
-            engine.removeParticle(p);
+            simulator.removeParticle(p);
         }
     }
 }
