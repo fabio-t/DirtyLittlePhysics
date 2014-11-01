@@ -15,6 +15,7 @@
  */
 package engine;
 
+import utils.HashGrid.Point;
 import utils.Maths;
 import utils.Vect3D;
 
@@ -29,7 +30,7 @@ import utils.Vect3D;
  * 
  * @author Fabio Ticconi
  */
-public class Particle
+public class Particle implements Point
 {
     double mass;
     double radius;
@@ -71,5 +72,23 @@ public class Particle
     {
         this.radius = radius;
         this.density = Maths.sphereDensity(mass, radius);
+    }
+
+    @Override
+    public double getX()
+    {
+        return pos.x;
+    }
+
+    @Override
+    public double getY()
+    {
+        return pos.y;
+    }
+
+    @Override
+    public double getZ()
+    {
+        return pos.z;
     }
 }

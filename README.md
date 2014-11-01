@@ -18,6 +18,6 @@ Will be my little dirty physics engine for games that don't need rigid body phys
 * A better storage for the particles, eg a KDtree, to make easier collision detection and neareast neighbours searches. (*not sure to put this inside the engine, but might provide helper classes instead*)
 
 ## Nice to have
-* Unit tests
+* Unit tests for the update function
 * A bit of documentation
 * A graphical demo
