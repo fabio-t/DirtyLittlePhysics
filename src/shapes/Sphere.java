@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Fabio Ticconi
+ * Copyright 2015 Fabio Ticconi
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package utils;
+package shapes;
 
 /**
- * Helper class for math operations relevant to the engine.
- * 
- * @author Fabio Ticconi
+ * Defines a spherical shape.
  */
-public class Maths
+public interface Sphere extends Shape
 {
-    public static double sphereDensity(double mass, double radius)
-    {
-        return mass / sphereVolume(radius);
-    }
+    public Point getCenter();
 
-    public static double sphereVolume(double radius)
-    {
-        return (4d / 3d) * Math.PI * radius * radius * radius;
-    }
+    public double getRadius();
 }

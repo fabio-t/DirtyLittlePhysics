@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,17 +19,19 @@ package utils;
  * This class implements some coordinate management utilities in
  * a four-dimensional grid world.
  * 
- * <br /><br />
- *
+ * <br />
+ * <br />
+ * 
  * It uses quite some bitwise voodoo. Because of java's horrible lack of
  * unsigned primitives, and since I don't want to make this class even
  * lower-level, the allowed range for each of the four coordinates is [0, 2^15 -
  * 1].
  * 
- * <br /><br />
- *
+ * <br />
+ * <br />
+ * 
  * This means half the bits for each dimension are wasted. A pity.
- *
+ * 
  * @author Fabio Ticconi
  */
 public class Coords
@@ -39,13 +41,14 @@ public class Coords
      * off.
      */
     private static final long MASK = Short.MAX_VALUE;
-    
+
     /**
      * Generates four coordinates from a <b>long</b> key.<br />
      * The coordinates are in the following order (from index <i>0</i>): u, x,
      * y, z.
-     *
-     * @param key the compacted <b>long</b>
+     * 
+     * @param key
+     *            the compacted <b>long</b>
      * @return the array of <b>short</b> coordinates in the following order
      *         (from index <i>0</i>): u, x, y, z.
      */
@@ -63,7 +66,7 @@ public class Coords
 
     /**
      * Generates a <b>long</b> key from the four coordinates.
-     *
+     * 
      * @param u
      * @param x
      * @param y

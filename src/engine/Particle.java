@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,82 +13,99 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package engine;
 
-import utils.HashGrid.Point;
+import shapes.Point;
+import shapes.Sphere;
 import utils.Maths;
 import utils.Vect3D;
 
-
 /**
  * Particle class, including movement vectors and size/weight properties.
- * <br /><br />
+ * 
+ * <br />
+ * <br />
  * 
  * Includes some helper functions to set the mass and radius, and
- * automatically set the density assuming the Particle
- * is a sphere.
+ * automatically sets the density when setting either the radius or
+ * the mass.
+ * 
+ * <br/>
+ * <br/>
+ * 
+ * In addition, it implements the interface Point. This is used by
+ * the collider.
  * 
  * @author Fabio Ticconi
  */
-public class Particle implements Point
+public class Particle implements Sphere
 {
-    double mass;
-    double radius;
-    double density;
-    
-    Vect3D pos;
-    Vect3D vel;
-    Vect3D acc;
-    
+    final Vect3D oldCenter;
+    final Vect3D center;
+
+    double       radius;
+    double       mass;
+    double       density;
+
+    final Vect3D vel;
+    final Vect3D acc;
+
     public Particle()
     {
-        this.mass    = 1d;
-        this.radius  = 1d;
-        this.density = Maths.sphereDensity(mass, radius);
-        
-        this.pos = new Vect3D();
-        this.vel = new Vect3D();
-        this.acc = new Vect3D();
+        oldCenter = new Vect3D();
+        center = new Vect3D();
+
+        radius = 1d;
+        mass = 1d;
+        density = Maths.sphereDensity(mass, radius);
+
+        vel = new Vect3D();
+        acc = new Vect3D();
     }
-    
-    public Particle(double mass, double radius, Vect3D pos, Vect3D vel, Vect3D acc)
+
+    public Particle(final double mass, final double radius, final Vect3D pos, final Vect3D vel, final Vect3D acc)
     {
-        this.mass    = mass;
-        this.radius  = radius;
-        this.density = Maths.sphereDensity(mass, radius);
-        
-        this.pos = pos;
+        oldCenter = new Vect3D(pos);
+        center = pos;
+
+        this.mass = mass;
+        this.radius = radius;
+        density = Maths.sphereDensity(mass, radius);
+
         this.vel = vel;
         this.acc = acc;
     }
-    
-    public void setMass(double mass)
+
+    public void setMass(final double mass)
     {
         this.mass = mass;
-        this.density = Maths.sphereDensity(mass, radius);
+        density = Maths.sphereDensity(mass, radius);
     }
-    
-    public void setRadius(double radius)
+
+    public void setRadius(final double radius)
     {
         this.radius = radius;
-        this.density = Maths.sphereDensity(mass, radius);
+        density = Maths.sphereDensity(mass, radius);
     }
 
-    @Override
-    public double getX()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Sphere#getCenter()
+     */
+    public Point getCenter()
     {
-        return pos.x;
+        return center;
     }
 
-    @Override
-    public double getY()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Sphere#getRadius()
+     */
+    public double getRadius()
     {
-        return pos.y;
-    }
-
-    @Override
-    public double getZ()
-    {
-        return pos.z;
+        return radius;
     }
 }

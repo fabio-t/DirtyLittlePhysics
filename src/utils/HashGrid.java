@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,8 @@ package utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import shapes.Point;
+
 /**
  * A HashGrid implementation that flattens out 3D Points
  * into 1D cells. This allows for relatively fast
@@ -26,23 +28,16 @@ import java.util.List;
  * @author Fabio Ticconi
  */
 public class HashGrid
-{    
-    public interface Point
-    {
-        public double getX();
-        public double getY();
-        public double getZ();
-    }
-    
-    int cellSize;
-    double xFactor;
-    double yFactor;
-    
-    int length;
-    int width;
-    
+{
+    int                cellSize;
+    double             xFactor;
+    double             yFactor;
+
+    int                length;
+    int                width;
+
     ArrayList<Point>[] cells;
-    
+
     /**
      * Creates a new Grid World with the given dimensions
      * and cell size. The objects will be partitioned
@@ -54,7 +49,8 @@ public class HashGrid
      * in a specific 3D column in the world. The assumption is that
      * underground and overground objects are rare).
      * 
-     * <br /><br />
+     * <br />
+     * <br />
      * 
      * Note how the dimensions of the world are short variables.
      * This is because for my needs that's large enough, and allows me
@@ -66,104 +62,100 @@ public class HashGrid
      * information in case you want to go down that route is
      * "Morgan Kaufmann - Real time collision detection".
      * 
-     * @param x the absolute "length" of the world
-     * @param y the absolute "width" of the world
-     * @param cellSize the length of one (squared) cell
+     * @param x
+     *            the absolute "length" of the world
+     * @param y
+     *            the absolute "width" of the world
+     * @param cellSize
+     *            the length of one (squared) cell
      */
     @SuppressWarnings("unchecked")
-    public HashGrid(short x_min, short x_max, short y_min, short y_max, short cellSize)
+    public HashGrid(final short x_min, final short x_max, final short y_min, final short y_max, final short cellSize)
     {
         this.cellSize = cellSize;
-                
-        this.length = (x_max - x_min) / cellSize;
-        this.width  = (y_max - y_min) / cellSize;
-        
-        this.xFactor = 1d / cellSize;
-        this.yFactor = xFactor * width;
-        
-        cells = (ArrayList<Point>[]) new ArrayList[length * width];
+
+        length = (x_max - x_min) / cellSize;
+        width = (y_max - y_min) / cellSize;
+
+        xFactor = 1d / cellSize;
+        yFactor = xFactor * width;
+
+        cells = new ArrayList[length * width];
     }
-    
+
     /**
      * Add all points in input to the respective
      * cells.
      * 
      * @param points
      */
-    public void addAll(Point ... points)
+    public void addAll(final Point... points)
     {
         for (int i = 0; i < points.length; i++)
-        {
             add(points[i]);
-        }
     }
-    
+
     /**
      * Add all points in input to the respective cells.
      * 
      * @param points
      */
-    public void addAll(List<Point> points)
+    public void addAll(final List<Point> points)
     {
-        for (Point p : points)
-        {
+        for (final Point p : points)
             add(p);
-        }
     }
 
     /**
      * Add a single Point to its cell.
+     * 
      * @param p
      */
-    public void add(Point p)
+    public void add(final Point p)
     {
-        int index = getIndex(p);
-        
+        final int index = getIndex(p);
+
         if (cells[index] == null)
             cells[index] = new ArrayList<Point>();
-        
+
         cells[index].add(p);
     }
-    
+
     /**
      * Returns all points sharing the same
      * coordinates of p.
      * 
      * @param p
      */
-    public List<Point> getCollisions(Point p)
+    public List<Point> getCollisions(final Point p)
     {
-        int index = getIndex(p);
-        
+        final int index = getIndex(p);
+
         if (cells[index] == null || cells[index].isEmpty())
             return null;
-        
-        ArrayList<Point> points = cells[index];
-        
-        ArrayList<Point> collidingPoints = new ArrayList<Point>(points.size());
-        
-        for (Point p2 : points)
-        {
+
+        final ArrayList<Point> points = cells[index];
+
+        final ArrayList<Point> collidingPoints = new ArrayList<Point>(points.size());
+
+        for (final Point p2 : points)
             if (p.getX() == p2.getX() && p.getY() == p2.getY() && p.getZ() == p2.getZ())
                 collidingPoints.add(p2);
-        }
-        
+
         return collidingPoints;
     }
-    
+
     /**
      * Removes all points from all cells.
      */
     public void clearAll()
     {
-        for (ArrayList<Point> cell : cells)
-        {
+        for (final ArrayList<Point> cell : cells)
             if (cell != null)
                 cell.clear();
-        }
     }
-    
-    private int getIndex(Point p)
+
+    private int getIndex(final Point p)
     {
         return (int) (p.getX() * xFactor + p.getY() * yFactor);
     }
