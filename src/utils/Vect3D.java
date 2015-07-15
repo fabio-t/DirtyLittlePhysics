@@ -36,6 +36,13 @@ public class Vect3D implements Point
         z = 0d;
     }
 
+    public Vect3D(final Point p)
+    {
+        x = p.getX();
+        y = p.getY();
+        z = p.getZ();
+    }
+
     public Vect3D(final double x, final double y, final double z)
     {
         this.x = x;

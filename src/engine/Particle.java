@@ -77,16 +77,63 @@ public class Particle implements Sphere
         this.acc = acc;
     }
 
+    /**
+     * Overwrites the particle's mass.
+     * It recalculates the density based on mass
+     * and radius.
+     * 
+     * @param mass
+     */
     public void setMass(final double mass)
     {
         this.mass = mass;
         density = Maths.sphereDensity(mass, radius);
     }
 
+    /**
+     * Overwrites the particle's radius.
+     * It recalculates the density based and mass
+     * and radius.
+     * 
+     * @param radius
+     */
     public void setRadius(final double radius)
     {
         this.radius = radius;
         density = Maths.sphereDensity(mass, radius);
+    }
+
+    /**
+     * Overwrites the particle's velocity.
+     * It copies the values over, doesn't assign the object.
+     * 
+     * @param vel
+     */
+    public void setVelocity(final Vect3D vel)
+    {
+        this.vel.assign(vel);
+    }
+
+    /**
+     * Overwrites the particle's acceleration.
+     * It copies the values over, doesn't assign the object.
+     * 
+     * @param acc
+     */
+    public void setAcceleration(final Vect3D acc)
+    {
+        this.acc.assign(acc);
+    }
+
+    /**
+     * Overwrites the particle's center position.
+     * It copies the values over, doesn't assign the object.
+     * 
+     * @param center
+     */
+    public void setCenter(final Vect3D center)
+    {
+        this.center.assign(center);
     }
 
     /*
@@ -107,5 +154,15 @@ public class Particle implements Sphere
     public double getRadius()
     {
         return radius;
+    }
+
+    public double getDensity()
+    {
+        return density;
+    }
+
+    public double getMass()
+    {
+        return mass;
     }
 }

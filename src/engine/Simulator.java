@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package engine;
 
 import java.util.Arrays;
@@ -44,6 +45,15 @@ public class Simulator
     public interface Map
     {
         /**
+         * Returns true if the point is outside of the Map,
+         * false otherwise.
+         * 
+         * @param p
+         * @return
+         */
+        public boolean isOverBounds(final Point p);
+
+        /**
          * Returns the Cell object including the given point.
          * 
          * @param p
@@ -54,11 +64,11 @@ public class Simulator
         /**
          * Returns true if the two points belong to the same cell.
          * 
-         * @param from
-         * @param to
+         * @param p1
+         * @param p2
          * @return
          */
-        public boolean areNeighbours(final Point from, final Point to);
+        public boolean areNeighbours(final Point p1, final Point p2);
     }
 
     /**
@@ -71,45 +81,69 @@ public class Simulator
      */
     public static class SimpleMap implements Map
     {
-        private Cell water  = new FluidCell(FluidCell.WATER_DENSITY);
+        // private Cell water = new FluidCell(FluidCell.WATER_DENSITY);
         private Cell air    = new FluidCell(FluidCell.AIR_DENSITY);
         private Cell ground = new SolidCell();
 
-        public SimpleMap()
+        int          x_min, x_max;
+        int          y_min, y_max;
+        int          z_min, z_max;
+
+        public SimpleMap(final int x_min,
+                         final int x_max,
+                         final int y_min,
+                         final int y_max,
+                         final int z_min,
+                         final int z_max)
         {
-            water = new FluidCell(FluidCell.WATER_DENSITY);
+            // water = new FluidCell(FluidCell.WATER_DENSITY);
             air = new FluidCell(FluidCell.AIR_DENSITY);
             ground = new SolidCell();
+
+            this.x_min = x_min;
+            this.x_max = x_max;
+            this.y_min = y_min;
+            this.y_max = y_max;
+            this.z_min = z_min;
+            this.z_max = z_max;
         }
 
-        public Cell getCell(final Point point)
+        public boolean isOverBounds(final Point p)
+        {
+            final double x = p.getX();
+            final double y = p.getY();
+            final double z = p.getZ();
+
+            if (x < x_min || x > x_max || y < y_min || y > y_max || z < z_min || z > z_max)
+                return true;
+
+            return false;
+        }
+
+        public Cell getCell(final Point p)
         {
             // the Z=0 plane is the walkable plane
-            if (point.getZ() < 0.0)
+            if (p.getZ() < 0.0)
                 return ground;
 
             // the rest is air
             return air;
         }
 
-        public boolean areNeighbours(final Point from, final Point to)
+        public boolean areNeighbours(final Point p1, final Point p2)
         {
-            if (from.getZ() < 0.0 && to.getZ() >= 0.0)
+            if (p1.getZ() < 0.0 && p2.getZ() >= 0.0)
                 // we were into the ground and we want to go out
                 return false;
 
-            if (from.getZ() >= 0.0 && to.getZ() < 0.0)
+            if (p1.getZ() >= 0.0 && p2.getZ() < 0.0)
                 // we are over the ground and we want to dig in
                 return false;
 
-            // in all other cases, we are neighbours
+            // in all other cases, we are "neighbours" in this very simple
+            // Map
             return true;
         }
-    }
-
-    public interface Collider
-    {
-
     }
 
     /**
@@ -394,7 +428,7 @@ public class Simulator
             // if the new position rests in the same
             // cell of the old position, we can update
             // the particle speed and conclude the step
-            if (world.areNeighbours(oldpos, newpos))
+            if (!world.isOverBounds(newpos) && world.areNeighbours(oldpos, newpos))
             {
                 // we assign the values of newpos
                 // inside the actual particle center
@@ -417,6 +451,8 @@ public class Simulator
             else
                 // if they don't, we should move the particle
                 // only up to the border between the cells
+                // this also applies to the case of being
+                // at the edge of the world.
                 // FIXME: for now we don't care an use a
                 // bad heuristics: the velocity is halved and
                 // the problem is postponed to the next time step
@@ -432,7 +468,7 @@ public class Simulator
     {
         final double STEP = 0.01d;
 
-        final Simulator w = new Simulator(new SimpleMap());
+        final Simulator w = new Simulator(new SimpleMap(-100, 100, -100, 100, -100, 100));
 
         final Particle p = new Particle();
         p.center.z = 10000.0;
