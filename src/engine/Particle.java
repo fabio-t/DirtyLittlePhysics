@@ -141,6 +141,7 @@ public class Particle implements Sphere
      * 
      * @see shapes.Sphere#getCenter()
      */
+    @Override
     public Point getCenter()
     {
         return center;
@@ -151,6 +152,7 @@ public class Particle implements Sphere
      * 
      * @see shapes.Sphere#getRadius()
      */
+    @Override
     public double getRadius()
     {
         return radius;
@@ -164,5 +166,10 @@ public class Particle implements Sphere
     public double getMass()
     {
         return mass;
+    }
+
+    public Vect3D getVelocity()
+    {
+        return vel;
     }
 }

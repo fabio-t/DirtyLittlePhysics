@@ -69,188 +69,16 @@ public class Simulator
          * @return
          */
         public boolean areNeighbours(final Point p1, final Point p2);
-    }
 
-    /**
-     * For the purpose of testing, the simplest map is hard-coded
-     * so that both ground and fluids can be used.
-     * Cells are inherently flyweight: only three Cell objects are instantiated,
-     * for any map size.
-     * 
-     * @author Fabio Ticconi
-     */
-    public static class SimpleMap implements Map
-    {
-        // private Cell water = new FluidCell(FluidCell.WATER_DENSITY);
-        private Cell air    = new FluidCell(FluidCell.AIR_DENSITY);
-        private Cell ground = new SolidCell();
-
-        int          x_min, x_max;
-        int          y_min, y_max;
-        int          z_min, z_max;
-
-        public SimpleMap(final int x_min,
-                         final int x_max,
-                         final int y_min,
-                         final int y_max,
-                         final int z_min,
-                         final int z_max)
-        {
-            // water = new FluidCell(FluidCell.WATER_DENSITY);
-            air = new FluidCell(FluidCell.AIR_DENSITY);
-            ground = new SolidCell();
-
-            this.x_min = x_min;
-            this.x_max = x_max;
-            this.y_min = y_min;
-            this.y_max = y_max;
-            this.z_min = z_min;
-            this.z_max = z_max;
-        }
-
-        public boolean isOverBounds(final Point p)
-        {
-            final double x = p.getX();
-            final double y = p.getY();
-            final double z = p.getZ();
-
-            if (x < x_min || x > x_max || y < y_min || y > y_max || z < z_min || z > z_max)
-                return true;
-
-            return false;
-        }
-
-        public Cell getCell(final Point p)
-        {
-            // the Z=0 plane is the walkable plane
-            if (p.getZ() < 0.0)
-                return ground;
-
-            // the rest is air
-            return air;
-        }
-
-        public boolean areNeighbours(final Point p1, final Point p2)
-        {
-            if (p1.getZ() < 0.0 && p2.getZ() >= 0.0)
-                // we were into the ground and we want to go out
-                return false;
-
-            if (p1.getZ() >= 0.0 && p2.getZ() < 0.0)
-                // we are over the ground and we want to dig in
-                return false;
-
-            // in all other cases, we are "neighbours" in this very simple
-            // Map
-            return true;
-        }
-    }
-
-    /**
-     * Defines a generic "Cell", containing the main physical
-     * properties needed for the simulation.
-     */
-    public interface Cell
-    {
         /**
-         * Check if the particle can <i>move through</i> this block.
-         * This influences both the case a particle is already inside
-         * the block (and cannot go out), and when (more usually) the
-         * particle is outside and cannot get in (ie, the ground).
+         * Returns true if the point can move to the destination,
+         * false otherwise.
          * 
-         * @param p
+         * @param from
+         * @param to
          * @return
          */
-        public boolean canPass(Particle p);
-
-        /**
-         * Returns the sum of all forces in this Cell that would be acting
-         * on the given {@link Particle} if it was into this {@link Cell}.
-         * 
-         * @param p
-         * @return newly instanced force vector
-         */
-        public Vect3D getForces(Particle p);
-    }
-
-    public static class SolidCell implements Cell
-    {
-        /*
-         * (non-Javadoc)
-         * 
-         * @see engine.Simulator.Cell#canPass(engine.Particle)
-         */
-        public boolean canPass(final Particle p)
-        {
-            return false;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see engine.Simulator.Cell#getForces(engine.Particle)
-         */
-        public Vect3D getForces(final Particle p)
-        {
-            return nullVector;
-        }
-    }
-
-    public static class FluidCell implements Cell
-    {
-        // Common densities
-        public final static double AIR_DENSITY   = 1.2d; // pretty dense air
-        public final static double WATER_DENSITY = 1000d;
-
-        public final double        density;
-
-        public FluidCell(final double density)
-        {
-            this.density = density;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see engine.Simulator.Cell#getForces(engine.Particle)
-         */
-        public Vect3D getForces(final Particle p)
-        {
-            return getDragForce(p);
-        }
-
-        /**
-         * <p>
-         * Variation on the classic quadratic drag formula (not Stoke's!).
-         * </p>
-         * 
-         * @return newly instanced force opposite to the particle's direction
-         */
-        private Vect3D getDragForce(final Particle p)
-        {
-            final Vect3D force = new Vect3D(p.vel).mul(p.vel).mul(Math.PI * p.radius * p.radius * density);
-
-            if (p.vel.x > 0)
-                force.x = -force.x;
-
-            if (p.vel.y > 0)
-                force.y = -force.y;
-
-            if (p.vel.z > 0)
-                force.z = -force.z;
-
-            return force;
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see engine.Simulator.Cell#canPass(engine.Particle)
-         */
-        public boolean canPass(final Particle p)
-        {
-            return true;
-        }
+        public boolean canMoveTo(final Point from, final Point to);
     }
 
     private final Map world;
@@ -394,17 +222,14 @@ public class Simulator
 
             cell = world.getCell(p.center);
 
-            if (cell instanceof FluidCell)
-            {
-                // Gravity must be corrected by the buoyancy.
-                // Reference: http://lorien.ncl.ac.uk/ming/particle/cpe124p2.html
-                // Note: normally this would only make sense for the "z" dimension,
-                // but who are we to limit your creativity?
-                buoyancy = ((p.density - ((FluidCell) cell).density) / p.density);
-                netGravity.x = gravity.x * buoyancy;
-                netGravity.y = gravity.y * buoyancy;
-                netGravity.z = gravity.z * buoyancy;
-            }
+            buoyancy = cell.getBuoyancy(p);
+
+            // Gravity must be corrected by the buoyancy.
+            // Note: normally this would only make sense for the "z" dimension,
+            // but who are we to limit your creativity?
+            netGravity.x = gravity.x * buoyancy;
+            netGravity.y = gravity.y * buoyancy;
+            netGravity.z = gravity.z * buoyancy;
 
             force = cell.getForces(p);
 
@@ -428,7 +253,7 @@ public class Simulator
             // if the new position rests in the same
             // cell of the old position, we can update
             // the particle speed and conclude the step
-            if (!world.isOverBounds(newpos) && world.areNeighbours(oldpos, newpos))
+            if (world.canMoveTo(oldpos, newpos))
             {
                 // we assign the values of newpos
                 // inside the actual particle center
@@ -462,116 +287,5 @@ public class Simulator
             // soon the acceleration should be removed from the Particle class
             p.acc.assign(acc);
         }
-    }
-
-    public static void main(final String[] args)
-    {
-        final double STEP = 0.01d;
-
-        final Simulator w = new Simulator(new SimpleMap(-100, 100, -100, 100, -100, 100));
-
-        final Particle p = new Particle();
-        p.center.z = 10000.0;
-        p.setMass(70d);
-        p.setRadius(0.2505887894d);
-        System.out.println("Mass: " + p.mass + ", Radius: " + p.radius + ", Density: " + p.density);
-        p.vel.x = 5d;
-        System.out.println("First particle: initial values");
-        System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        w.addParticle(p);
-        w.update(STEP);
-        System.out.println("After 1 step (" + STEP + " seconds):");
-        System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        w.update(STEP);
-        System.out.println("After 1 step (" + STEP + " seconds):");
-        System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        w.update(STEP);
-        System.out.println("After 1 step (" + STEP + " seconds):");
-        System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-
-        long time1 = System.currentTimeMillis();
-        System.out.print("Adding particles.. ");
-        for (int i = 0; i < 100000; i++)
-        {
-            final Particle p2 = new Particle();
-            p2.vel.x = 1d;
-            w.addParticle(p2);
-        }
-        long time2 = System.currentTimeMillis();
-        System.out.println((time2 - time1) + " ms");
-
-        time1 = System.currentTimeMillis();
-        System.out.print("Moving forward the simulation.. ");
-        for (double t = 0d; t < 1d; t = t + STEP)
-            w.update(STEP);
-        time2 = System.currentTimeMillis();
-        System.out.println((time2 - time1) + " ms");
-
-        System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-
-        time1 = System.currentTimeMillis();
-        System.out.print("Moving forward the simulation.. ");
-        for (double t = 0d; t < 10d; t = t + STEP)
-            w.update(STEP);
-        time2 = System.currentTimeMillis();
-        System.out.println((time2 - time1) + " ms");
-
-        System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-
-        time1 = System.currentTimeMillis();
-        System.out.print("Moving forward the simulation.. ");
-        for (double t = 0d; t < 10d; t = t + STEP)
-            w.update(STEP);
-        time2 = System.currentTimeMillis();
-        System.out.println((time2 - time1) + " ms");
-
-        System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-
-        time1 = System.currentTimeMillis();
-        System.out.print("Moving forward the simulation.. ");
-        for (double t = 0d; t < 100d; t = t + STEP)
-            w.update(STEP);
-        time2 = System.currentTimeMillis();
-        System.out.println((time2 - time1) + " ms");
-
-        System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-
-        time1 = System.currentTimeMillis();
-        System.out.print("Moving forward the simulation.. ");
-        for (double t = 0d; t < 100d; t = t + STEP)
-            w.update(STEP);
-        time2 = System.currentTimeMillis();
-        System.out.println((time2 - time1) + " ms");
-
-        System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-
-        time1 = System.currentTimeMillis();
-        System.out.print("Moving forward the simulation.. ");
-        for (double t = 0d; t < 1000d; t = t + STEP)
-            w.update(STEP);
-        time2 = System.currentTimeMillis();
-        System.out.println((time2 - time1) + " ms");
-
-        System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
     }
 }

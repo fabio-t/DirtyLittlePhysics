@@ -24,26 +24,30 @@
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.JFrame;
 
+import maps.SimpleMap;
+
 import utils.Vect3D;
 import engine.Particle;
 import engine.Simulator;
-import engine.Simulator.SimpleMap;
 
-public class Main extends JFrame
+public class GraphicDemo extends JFrame
 {
     private static final long                     serialVersionUID = -6027400479565797010L;
 
-    private static boolean                        VERBOSE          = false;
+    private static boolean                        VERBOSE          = true;
 
     private final ArrayList<Particle>             particles        = new ArrayList<Particle>(500);
     private final ConcurrentLinkedQueue<Particle> newParticles     = new ConcurrentLinkedQueue<Particle>();
@@ -56,7 +60,7 @@ public class Main extends JFrame
     private final int                             width;
     private final int                             height;
 
-    public Main(final int width, final int height, final String title)
+    public GraphicDemo(final int width, final int height, final String title)
     {
         super();
         setTitle(title);
@@ -84,19 +88,53 @@ public class Main extends JFrame
         render.createBufferStrategy(2);
         bufferstrat = render.getBufferStrategy();
 
-        simulator = new Simulator(new SimpleMap(0, width, 0, 0, 0, height));
+        simulator = new Simulator(new SimpleMap(-width / 2, width / 2, 0, 0, -height / 2, height / 2));
+    }
+
+    public Vect3D transformToSim(final Point p)
+    {
+        // top left corner is (0,0)
+        // bottom right corner is (width,height)
+
+        // must become: top left = (-width/2,height/2)
+        // bottom right = (width/2,-height/2)
+
+        final Vect3D newP = new Vect3D();
+
+        newP.x = p.x - (width / 2);
+        newP.z = -p.y + (height / 2);
+
+        return newP;
+    }
+
+    public Vect3D transformToGraphics(final shapes.Point p)
+    {
+        // top left corner is (-width/2,height/2)
+        // bottom right corner is (width/2,-height/2)
+
+        // must become: top left = (0,0)
+        // bottom right = (width,height)
+
+        final Vect3D newP = new Vect3D();
+
+        newP.x = p.getX() + (width / 2);
+        newP.z = -(p.getZ() - (height / 2));
+
+        return newP;
     }
 
     public void addParticle()
     {
-        final java.awt.Point pos = render.getMousePosition();
+        final Point pos = render.getMousePosition();
         if (pos != null)
         {
             final Particle p = new Particle();
 
+            final Vect3D realPos = transformToSim(pos);
+
             p.setRadius(Math.random() / 5.0 + 0.1);
             p.setMass(Math.random() * 20.0 + 500.0);
-            p.setCenter(new Vect3D(pos.getX(), 0.0, height - pos.getY()));
+            p.setCenter(realPos);
             p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
 
             newParticles.add(p);
@@ -114,18 +152,6 @@ public class Main extends JFrame
             @Override
             public void mouseClicked(final MouseEvent e)
             {
-                addParticle();
-                addParticle();
-                addParticle();
-                addParticle();
-                addParticle();
-                addParticle();
-                addParticle();
-                addParticle();
-                addParticle();
-                addParticle();
-                addParticle();
-                addParticle();
                 addParticle();
             }
 
@@ -169,9 +195,7 @@ public class Main extends JFrame
 
     public void loop()
     {
-        final Particle p;
-
-        final double FPS = 20.0;
+        final double FPS = 30.0;
         final double frameDuration = 1000.0 / FPS;
         final double dt = frameDuration / 1000.0;
 
@@ -189,7 +213,7 @@ public class Main extends JFrame
 
             // sleep for a frame if we haven't done any
             // job
-            if (elapsed < 50)
+            if (elapsed < frameDuration)
                 try
                 {
                     if (VERBOSE)
@@ -226,7 +250,19 @@ public class Main extends JFrame
             do
             {
                 final Graphics2D g2d = (Graphics2D) bufferstrat.getDrawGraphics();
-                g2d.fillRect(0, 0, render.getWidth(), render.getHeight());
+
+                g2d.setColor(Color.white);
+                final Rectangle2D.Double upper = new Rectangle2D.Double(0, 0, render.getWidth(), render.getHeight() / 2);
+
+                g2d.fill(upper);
+
+                g2d.setColor(Color.black);
+                final Rectangle2D.Double lower = new Rectangle2D.Double(0, render.getHeight() / 2, render.getWidth(),
+                                                                        render.getHeight());
+                g2d.fill(lower);
+
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
                 renderParticles(g2d);
 
@@ -246,12 +282,14 @@ public class Main extends JFrame
     {
         final Graphics2D g2d = (Graphics2D) g.create();
 
-        g2d.setColor(Color.white);
+        g2d.setColor(Color.blue);
 
         final double radius = p.getRadius() * 25.0;
 
-        final double x = p.getCenter().getX() - radius;
-        final double z = height - p.getCenter().getZ() - radius;
+        final Vect3D newPoint = transformToGraphics(p.getCenter());
+
+        final double x = newPoint.x - radius;
+        final double z = newPoint.z - radius;
         final double diameter = radius * 2;
 
         if (VERBOSE)
@@ -272,7 +310,7 @@ public class Main extends JFrame
 
     public static void main(final String[] args)
     {
-        final Main window = new Main(800, 600, "Particles: ");
+        final GraphicDemo window = new GraphicDemo(800, 600, "Particles: ");
         window.pollInput();
         window.loop();
     }
