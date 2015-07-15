@@ -57,6 +57,12 @@ public class Vect3D implements Point
         z = v.z;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("(%f, %f, %f)", x, y, z);
+    }
+
     public Vect3D assign(final Vect3D v)
     {
         x = v.x;
@@ -230,6 +236,7 @@ public class Vect3D implements Point
      * 
      * @see shapes.Point#getX()
      */
+    @Override
     public double getX()
     {
         return x;
@@ -240,6 +247,7 @@ public class Vect3D implements Point
      * 
      * @see shapes.Point#getY()
      */
+    @Override
     public double getY()
     {
         return y;
@@ -250,6 +258,7 @@ public class Vect3D implements Point
      * 
      * @see shapes.Point#getZ()
      */
+    @Override
     public double getZ()
     {
         return z;

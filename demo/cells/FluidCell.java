@@ -15,6 +15,7 @@
  */
 package cells;
 
+import utils.Maths;
 import utils.Vect3D;
 import engine.Cell;
 import engine.Particle;
@@ -26,14 +27,25 @@ import engine.Particle;
 public class FluidCell implements Cell
 {
     // Common densities
-    public final static double AIR_DENSITY   = 1.2d; // pretty dense air
-    public final static double WATER_DENSITY = 1000d;
+    public final static double AIR_DENSITY     = 1.2d;      // pretty dense air
+    public final static double WATER_DENSITY   = 1000d;
+
+    public final static double AIR_VISCOSITY   = 0.00001983;
+    public final static double WATER_VISCOSITY = 0.001002;
 
     public final double        density;
+    public final double        viscosity;
 
     public FluidCell(final double density)
     {
         this.density = density;
+        viscosity = 0.0;
+    }
+
+    public FluidCell(final double density, final double viscosity)
+    {
+        this.density = density;
+        this.viscosity = viscosity;
     }
 
     /*
@@ -56,18 +68,10 @@ public class FluidCell implements Cell
      */
     private Vect3D getDragForce(final Particle p)
     {
-        final Vect3D vel = new Vect3D(p.getVelocity());
+        final Vect3D vel = p.getVelocity();
 
-        final Vect3D force = vel.mul(vel).mul(Math.PI * p.getRadius() * p.getRadius() * density);
-
-        if (vel.x > 0)
-            force.x = -force.x;
-
-        if (vel.y > 0)
-            force.y = -force.y;
-
-        if (vel.z > 0)
-            force.z = -force.z;
+        final Vect3D force = Maths.sphereDragForce(vel, density, p.getRadius());
+        // final Vect3D force = Maths.sphereStokeDragForce(vel, viscosity, p.getRadius());
 
         return force;
     }

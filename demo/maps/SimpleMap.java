@@ -1,7 +1,7 @@
 package maps;
+
 import shapes.Point;
 import cells.FluidCell;
-import cells.SolidCell;
 import engine.Cell;
 import engine.Simulator.Map;
 
@@ -31,13 +31,14 @@ import engine.Simulator.Map;
  */
 public class SimpleMap implements Map
 {
-    private Cell water  = new FluidCell(FluidCell.WATER_DENSITY);
-    private Cell air    = new FluidCell(FluidCell.AIR_DENSITY);
-    private Cell ground = new SolidCell();
+    private static final Cell water  = new FluidCell(FluidCell.WATER_DENSITY, FluidCell.WATER_VISCOSITY);
+    private static final Cell air    = new FluidCell(FluidCell.AIR_DENSITY, FluidCell.AIR_VISCOSITY);
+    // private static final Cell ground = new SolidCell();
+    private static final Cell ground = new FluidCell(1100.0);
 
-    int          x_min, x_max;
-    int          y_min, y_max;
-    int          z_min, z_max;
+    int                       x_min, x_max;
+    int                       y_min, y_max;
+    int                       z_min, z_max;
 
     public SimpleMap(final int x_min,
                      final int x_max,
@@ -46,10 +47,6 @@ public class SimpleMap implements Map
                      final int z_min,
                      final int z_max)
     {
-        water = new FluidCell(FluidCell.WATER_DENSITY);
-        air = new FluidCell(FluidCell.AIR_DENSITY);
-        ground = new SolidCell();
-
         this.x_min = x_min;
         this.x_max = x_max;
         this.y_min = y_min;
@@ -74,28 +71,25 @@ public class SimpleMap implements Map
     @Override
     public Cell getCell(final Point p)
     {
-        // the Z=0 plane is the walkable plane
-        if (p.getZ() < 0.0)
-            return ground;
+        if (p.getZ() > (z_max + z_min) / 2)
+            return air;
 
-        // the rest is air
-        return air;
+        if (p.getX() < (x_max + x_min) / 2)
+            return water;
+
+        return ground;
     }
 
     @Override
     public boolean areNeighbours(final Point p1, final Point p2)
     {
-        if (p1.getZ() < 0.0 && p2.getZ() >= 0.0)
-            // we were into the ground and we want to go out
-            return false;
+        final Cell c1 = getCell(p1);
+        final Cell c2 = getCell(p2);
 
-        if (p1.getZ() >= 0.0 && p2.getZ() < 0.0)
-            // we are over the ground and we want to dig in
-            return false;
+        if (c1 == c2)
+            return true;
 
-        // in all other cases, we are "neighbours" in this very simple
-        // Map
-        return true;
+        return false;
     }
 
     @Override

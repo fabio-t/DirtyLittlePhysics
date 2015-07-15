@@ -38,8 +38,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.swing.JFrame;
 
 import maps.SimpleMap;
-
 import utils.Vect3D;
+import engine.Cell;
 import engine.Particle;
 import engine.Simulator;
 
@@ -47,7 +47,7 @@ public class GraphicDemo extends JFrame
 {
     private static final long                     serialVersionUID = -6027400479565797010L;
 
-    private static boolean                        VERBOSE          = true;
+    private static boolean                        VERBOSE          = false;
 
     private final ArrayList<Particle>             particles        = new ArrayList<Particle>(500);
     private final ConcurrentLinkedQueue<Particle> newParticles     = new ConcurrentLinkedQueue<Particle>();
@@ -59,6 +59,8 @@ public class GraphicDemo extends JFrame
 
     private final int                             width;
     private final int                             height;
+
+    private final SimpleMap                       map;
 
     public GraphicDemo(final int width, final int height, final String title)
     {
@@ -88,7 +90,8 @@ public class GraphicDemo extends JFrame
         render.createBufferStrategy(2);
         bufferstrat = render.getBufferStrategy();
 
-        simulator = new Simulator(new SimpleMap(-width / 2, width / 2, 0, 0, -height / 2, height / 2));
+        map = new SimpleMap(-width / 2, width / 2, 0, 0, -height / 2, height / 2);
+        simulator = new Simulator(map);
     }
 
     public Vect3D transformToSim(final Point p)
@@ -132,10 +135,13 @@ public class GraphicDemo extends JFrame
 
             final Vect3D realPos = transformToSim(pos);
 
-            p.setRadius(Math.random() / 5.0 + 0.1);
-            p.setMass(Math.random() * 20.0 + 500.0);
+            // p.setRadius(Math.random() / 5.0 + 0.1);
+            // p.setMass(Math.random() * 20.0 + 50.0);
+            p.setMass(150.0);
+            p.setRadius(0.25);
+
             p.setCenter(realPos);
-            p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
+            // p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
 
             newParticles.add(p);
 
@@ -195,7 +201,7 @@ public class GraphicDemo extends JFrame
 
     public void loop()
     {
-        final double FPS = 30.0;
+        final double FPS = 66.0;
         final double frameDuration = 1000.0 / FPS;
         final double dt = frameDuration / 1000.0;
 
@@ -216,9 +222,6 @@ public class GraphicDemo extends JFrame
             if (elapsed < frameDuration)
                 try
                 {
-                    if (VERBOSE)
-                        System.out.println("Sleeping for " + frameDuration + " ms");
-
                     Thread.sleep((long) frameDuration);
                 } catch (final InterruptedException e)
                 {
@@ -251,15 +254,20 @@ public class GraphicDemo extends JFrame
             {
                 final Graphics2D g2d = (Graphics2D) bufferstrat.getDrawGraphics();
 
-                g2d.setColor(Color.white);
-                final Rectangle2D.Double upper = new Rectangle2D.Double(0, 0, render.getWidth(), render.getHeight() / 2);
+                g2d.setColor(Color.cyan);
+                final Rectangle2D.Double air = new Rectangle2D.Double(0, 0, render.getWidth(), render.getHeight() / 2);
 
-                g2d.fill(upper);
+                g2d.fill(air);
+
+                g2d.setColor(Color.blue);
+                final Rectangle2D.Double water = new Rectangle2D.Double(0, render.getHeight() / 2,
+                                                                        render.getWidth() / 2, render.getHeight());
+                g2d.fill(water);
 
                 g2d.setColor(Color.black);
-                final Rectangle2D.Double lower = new Rectangle2D.Double(0, render.getHeight() / 2, render.getWidth(),
-                                                                        render.getHeight());
-                g2d.fill(lower);
+                final Rectangle2D.Double ground = new Rectangle2D.Double(render.getWidth() / 2, render.getHeight() / 2,
+                                                                         render.getWidth(), render.getHeight());
+                g2d.fill(ground);
 
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
@@ -282,7 +290,7 @@ public class GraphicDemo extends JFrame
     {
         final Graphics2D g2d = (Graphics2D) g.create();
 
-        g2d.setColor(Color.blue);
+        g2d.setColor(Color.white);
 
         final double radius = p.getRadius() * 25.0;
 
@@ -293,14 +301,26 @@ public class GraphicDemo extends JFrame
         final double diameter = radius * 2;
 
         if (VERBOSE)
-            System.out.println("rendering particle: x:" +
+        {
+            final Cell c = map.getCell(p.getCenter());
+
+            final String celltype = c.getClass().getName();
+
+            System.out.println("rendering particle (" +
+                               celltype +
+                               "): x:" +
                                x +
                                ", z:" +
                                z +
+                               ", realx:" +
+                               p.getCenter().getX() +
+                               ", realz:" +
+                               p.getCenter().getZ() +
                                ", m: " +
                                p.getMass() +
                                ", d:" +
                                p.getDensity());
+        }
 
         final Ellipse2D.Double circle = new Ellipse2D.Double(x, z, diameter, diameter);
         g2d.fill(circle);
@@ -310,7 +330,7 @@ public class GraphicDemo extends JFrame
 
     public static void main(final String[] args)
     {
-        final GraphicDemo window = new GraphicDemo(800, 600, "Particles: ");
+        final GraphicDemo window = new GraphicDemo(1024, 768, "Particles: ");
         window.pollInput();
         window.loop();
     }

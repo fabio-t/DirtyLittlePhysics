@@ -36,7 +36,9 @@ import utils.Vect3D;
  */
 public class Simulator
 {
-    public static final Vect3D nullVector = new Vect3D(0.0, 0.0, 0.0);
+    public static final Vect3D  nullVector = new Vect3D(0.0, 0.0, 0.0);
+
+    public static final boolean VERBOSE    = false;
 
     /**
      * Manages all 3D terrain data, allowing the physics to retrieve
@@ -220,18 +222,23 @@ public class Simulator
 
             vel = p.vel;
 
+            if (VERBOSE)
+                System.out.println("pre: " + p);
+
             cell = world.getCell(p.center);
 
-            buoyancy = cell.getBuoyancy(p);
-
-            // Gravity must be corrected by the buoyancy.
+            // Gravity must be corrected by the buoyancy (if the cell has one).
             // Note: normally this would only make sense for the "z" dimension,
             // but who are we to limit your creativity?
+            buoyancy = cell.getBuoyancy(p);
             netGravity.x = gravity.x * buoyancy;
             netGravity.y = gravity.y * buoyancy;
             netGravity.z = gravity.z * buoyancy;
 
             force = cell.getForces(p);
+
+            if (VERBOSE)
+                System.out.println("force: " + force);
 
             // as the Gravitational force is equal to m*g,
             // we can add it after the cumulative force has been
@@ -242,17 +249,22 @@ public class Simulator
             acc.y = (force.y / p.mass) + netGravity.y;
             acc.z = (force.z / p.mass) + netGravity.z;
 
+            if (VERBOSE)
+                System.out.println("acc: " + acc);
+
             newpos.x += dt * (vel.x + (dt2 * acc.x));
             newpos.y += dt * (vel.y + (dt2 * acc.y));
             newpos.z += dt * (vel.z + (dt2 * acc.z));
 
-            // we may, or may not, be in another cell
-            // right now
-            cell = world.getCell(newpos);
+            if (VERBOSE)
+                System.out.println("newpos: " + newpos);
 
-            // if the new position rests in the same
-            // cell of the old position, we can update
-            // the particle speed and conclude the step
+            // cell = world.getCell(newpos);
+
+            // if we can actually move to the new position,
+            // we copy the new position over the old
+            // and pre-calculate the next step from within
+            // the new cell
             if (world.canMoveTo(oldpos, newpos))
             {
                 // we assign the values of newpos
@@ -263,29 +275,41 @@ public class Simulator
                 vel.y += dt * acc.y;
                 vel.z += dt * acc.z;
 
+                if (VERBOSE)
+                    System.out.println("vel: " + vel);
+
                 force = cell.getForces(p);
 
-                acc.x -= (force.x / p.mass) + netGravity.x;
-                acc.y -= (force.y / p.mass) + netGravity.y;
-                acc.z -= (force.z / p.mass) + netGravity.z;
+                // acc.x = acc.x - ((force.x / p.mass) + netGravity.x);
+                // acc.y = acc.y - ((force.y / p.mass) + netGravity.y);
+                // acc.z = acc.z - ((force.z / p.mass) + netGravity.z);
+                acc.x = -acc.x + (force.x / p.mass) + netGravity.x;
+                acc.y = -acc.y + (force.y / p.mass) + netGravity.y;
+                acc.z = -acc.z + (force.z / p.mass) + netGravity.z;
+
+                if (VERBOSE)
+                    System.out.println("acc: " + acc);
 
                 vel.x += dt2 * acc.x;
                 vel.y += dt2 * acc.y;
                 vel.z += dt2 * acc.z;
-            }
-            else
-                // if they don't, we should move the particle
-                // only up to the border between the cells
-                // this also applies to the case of being
-                // at the edge of the world.
-                // FIXME: for now we don't care an use a
-                // bad heuristics: the velocity is halved and
-                // the problem is postponed to the next time step
-                vel.div(2.0);
 
-            // FIXME: kept only for debug,
-            // soon the acceleration should be removed from the Particle class
-            p.acc.assign(acc);
+                // FIXME: kept only for debug,
+                // soon the acceleration should be removed from the Particle class
+                p.acc.assign(acc);
+
+                if (VERBOSE)
+                    System.out.println("post: " + p);
+            }
+            // else
+            // if we can't, we should move the particle
+            // only up to the border between the cells
+            // this also applies to the case of being
+            // at the edge of the world.
+            // FIXME: for now we don't care an use a
+            // bad heuristics: the velocity is halved and
+            // the problem is postponed to the next time step
+            // vel.div(2.0);
         }
     }
 }

@@ -64,7 +64,7 @@ public class Particle implements Sphere
         acc = new Vect3D();
     }
 
-    public Particle(final double mass, final double radius, final Vect3D pos, final Vect3D vel, final Vect3D acc)
+    public Particle(final double mass, final double radius, final Vect3D pos, final Vect3D vel)
     {
         oldCenter = new Vect3D(pos);
         center = pos;
@@ -74,7 +74,7 @@ public class Particle implements Sphere
         density = Maths.sphereDensity(mass, radius);
 
         this.vel = vel;
-        this.acc = acc;
+        acc = new Vect3D();
     }
 
     /**
@@ -171,5 +171,11 @@ public class Particle implements Sphere
     public Vect3D getVelocity()
     {
         return vel;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("particle: cent: %s, vel: %s, acc: %s", center, vel, acc);
     }
 }
