@@ -16,7 +16,6 @@
 
 package engine;
 
-import shapes.Point;
 import shapes.Sphere;
 import utils.Maths;
 import utils.Vect3D;
@@ -142,7 +141,7 @@ public class Particle implements Sphere
      * @see shapes.Sphere#getCenter()
      */
     @Override
-    public Point getCenter()
+    public Vect3D getCenter()
     {
         return center;
     }

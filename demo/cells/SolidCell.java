@@ -15,6 +15,7 @@
  */
 package cells;
 
+import shapes.Box;
 import utils.Vect3D;
 import engine.Cell;
 import engine.Particle;
@@ -24,8 +25,17 @@ import engine.Simulator;
  * 
  * @author Fabio Ticconi
  */
-public class SolidCell implements Cell
+public class SolidCell implements Cell, Box
 {
+    private final Vect3D min;
+    private final Vect3D max;
+
+    public SolidCell()
+    {
+        min = new Vect3D();
+        max = new Vect3D();
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -57,5 +67,37 @@ public class SolidCell implements Cell
     public double getBuoyancy(final Particle p)
     {
         return 1.0;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Box#getMinPoint()
+     */
+    @Override
+    public Vect3D getMinPoint()
+    {
+        return min;
+    }
+
+    public void setMinPoint(final Vect3D v)
+    {
+        min.assign(v);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Box#getMaxPoint()
+     */
+    @Override
+    public Vect3D getMaxPoint()
+    {
+        return max;
+    }
+
+    public void setMaxPoint(final Vect3D v)
+    {
+        max.assign(v);
     }
 }

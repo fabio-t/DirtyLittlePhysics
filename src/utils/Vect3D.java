@@ -15,15 +15,13 @@
  */
 package utils;
 
-import shapes.Point;
-
 /**
  * 
  * Vect3D
  * 
  * @author Fabio Ticconi
  */
-public class Vect3D implements Point
+public class Vect3D
 {
     public double x;
     public double y;
@@ -34,13 +32,6 @@ public class Vect3D implements Point
         x = 0d;
         y = 0d;
         z = 0d;
-    }
-
-    public Vect3D(final Point p)
-    {
-        x = p.getX();
-        y = p.getY();
-        z = p.getZ();
     }
 
     public Vect3D(final double x, final double y, final double z)
@@ -61,6 +52,11 @@ public class Vect3D implements Point
     public String toString()
     {
         return String.format("(%f, %f, %f)", x, y, z);
+    }
+
+    public double getLength()
+    {
+        return Math.sqrt(dot(this, this));
     }
 
     public Vect3D assign(final Vect3D v)
@@ -165,6 +161,18 @@ public class Vect3D implements Point
         return this;
     }
 
+    public Vect3D max(final double d)
+    {
+        x = x > d ? x
+                 : d;
+        y = y > d ? y
+                 : d;
+        z = z > d ? z
+                 : d;
+
+        return this;
+    }
+
     public Vect3D min(final Vect3D v1)
     {
         x = x < v1.x ? x
@@ -177,90 +185,84 @@ public class Vect3D implements Point
         return this;
     }
 
+    public Vect3D min(final double d)
+    {
+        x = x < d ? x
+                 : d;
+        y = y < d ? y
+                 : d;
+        z = z < d ? z
+                 : d;
+
+        return this;
+    }
+
+    // ---------------------------------------------------------
+    // STATIC METHODS
+    // ---------------------------------------------------------
+
     public static Vect3D add(final Vect3D v1, final Vect3D v2)
     {
-        final Vect3D v = new Vect3D(v1);
+        return new Vect3D(v1).add(v2);
+    }
 
-        v.add(v2);
-
-        return v;
+    public static Vect3D add(final Vect3D v, final double d)
+    {
+        return new Vect3D(v).add(d);
     }
 
     public static Vect3D sub(final Vect3D v1, final Vect3D v2)
     {
-        final Vect3D v = new Vect3D(v1);
+        return new Vect3D(v1).sub(v2);
+    }
 
-        v.sub(v2);
-
-        return v;
+    public static Vect3D sub(final Vect3D v, final double d)
+    {
+        return new Vect3D(v).sub(d);
     }
 
     public static Vect3D mul(final Vect3D v1, final Vect3D v2)
     {
-        final Vect3D v = new Vect3D(v1);
+        return new Vect3D(v1).mul(v2);
+    }
 
-        v.mul(v2);
-
-        return v;
+    public static Vect3D mul(final Vect3D v, final double d)
+    {
+        return new Vect3D(v).mul(d);
     }
 
     public static Vect3D div(final Vect3D v1, final Vect3D v2)
     {
-        final Vect3D v = new Vect3D(v1);
+        return new Vect3D(v1).div(v2);
+    }
 
-        v.div(v2);
-
-        return v;
+    public static Vect3D div(final Vect3D v, final double d)
+    {
+        return new Vect3D(v).div(d);
     }
 
     public static Vect3D max(final Vect3D v1, final Vect3D v2)
     {
-        final Vect3D v = new Vect3D(v1);
+        return new Vect3D(v1).max(v2);
+    }
 
-        v.max(v2);
-
-        return v;
+    public static Vect3D max(final Vect3D v, final double d)
+    {
+        return new Vect3D(v).max(d);
     }
 
     public static Vect3D min(final Vect3D v1, final Vect3D v2)
     {
-        final Vect3D v = new Vect3D(v1);
-
-        v.min(v2);
-
-        return v;
+        return new Vect3D(v1).min(v2);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Point#getX()
-     */
-    @Override
-    public double getX()
+    public static Vect3D min(final Vect3D v, final double d)
     {
-        return x;
+        return new Vect3D(v).min(d);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Point#getY()
-     */
-    @Override
-    public double getY()
+    public static double dot(final Vect3D v1, final Vect3D v2)
     {
-        return y;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Point#getZ()
-     */
-    @Override
-    public double getZ()
-    {
-        return z;
+        return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
     }
 }

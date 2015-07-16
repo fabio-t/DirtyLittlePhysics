@@ -15,6 +15,7 @@
  */
 package cells;
 
+import shapes.Box;
 import utils.Maths;
 import utils.Vect3D;
 import engine.Cell;
@@ -24,7 +25,7 @@ import engine.Particle;
  * 
  * @author Fabio Ticconi
  */
-public class FluidCell implements Cell
+public class FluidCell implements Cell, Box
 {
     // Common densities
     public final static double AIR_DENSITY     = 1.2d;      // pretty dense air
@@ -36,16 +37,25 @@ public class FluidCell implements Cell
     public final double        density;
     public final double        viscosity;
 
+    private final Vect3D       min;
+    private final Vect3D       max;
+
     public FluidCell(final double density)
     {
         this.density = density;
         viscosity = 0.0;
+
+        min = new Vect3D();
+        max = new Vect3D();
     }
 
     public FluidCell(final double density, final double viscosity)
     {
         this.density = density;
         this.viscosity = viscosity;
+
+        min = new Vect3D();
+        max = new Vect3D();
     }
 
     /*
@@ -97,5 +107,37 @@ public class FluidCell implements Cell
     public double getBuoyancy(final Particle p)
     {
         return ((p.getDensity() - density) / p.getDensity());
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Box#getMinPoint()
+     */
+    @Override
+    public Vect3D getMinPoint()
+    {
+        return min;
+    }
+
+    public void setMinPoint(final Vect3D v)
+    {
+        min.assign(v);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Box#getMaxPoint()
+     */
+    @Override
+    public Vect3D getMaxPoint()
+    {
+        return max;
+    }
+
+    public void setMaxPoint(final Vect3D v)
+    {
+        max.assign(v);
     }
 }

@@ -48,6 +48,6 @@ public class Maths
 
     public static Vect3D sphereStokeDragForce(final Vect3D vel, final double viscosity, final double radius)
     {
-        return new Vect3D(vel).mul(vel).mul(6.0 * Math.PI * radius * viscosity);
+        return new Vect3D(vel).mul(6.0 * Math.PI * radius * viscosity);
     }
 }

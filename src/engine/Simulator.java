@@ -18,11 +18,10 @@ package engine;
 
 import java.util.Arrays;
 
-import shapes.Point;
 import utils.Vect3D;
 
 /**
- * Entry point for the engine. Simulates the movement of all
+ * Entry Vect3D for the engine. Simulates the movement of all
  * added particles by taking into consideration the properties of the
  * cell they are into. It uses Verlet Integration for fast and accurate simulation
  * of even velocity-dependent forces (like drag).
@@ -36,63 +35,20 @@ import utils.Vect3D;
  */
 public class Simulator
 {
-    public static final Vect3D  nullVector = new Vect3D(0.0, 0.0, 0.0);
+    public static final Vect3D  nullVector           = new Vect3D(0.0, 0.0, 0.0);
 
-    public static final boolean VERBOSE    = false;
+    public static final boolean VERBOSE              = false;
 
-    /**
-     * Manages all 3D terrain data, allowing the physics to retrieve
-     * Cell types.
-     */
-    public interface Map
-    {
-        /**
-         * Returns true if the point is outside of the Map,
-         * false otherwise.
-         * 
-         * @param p
-         * @return
-         */
-        public boolean isOverBounds(final Point p);
-
-        /**
-         * Returns the Cell object including the given point.
-         * 
-         * @param p
-         *            a {@link Point} to get the Cell of
-         */
-        public Cell getCell(Point p);
-
-        /**
-         * Returns true if the two points belong to the same cell.
-         * 
-         * @param p1
-         * @param p2
-         * @return
-         */
-        public boolean areNeighbours(final Point p1, final Point p2);
-
-        /**
-         * Returns true if the point can move to the destination,
-         * false otherwise.
-         * 
-         * @param from
-         * @param to
-         * @return
-         */
-        public boolean canMoveTo(final Point from, final Point to);
-    }
-
-    private final Map world;
+    private final Map           world;
 
     // initial maximumb number of particles, used to
     // initialise the array
-    public int        MAX_NUM_OF_PARTICLES = 1000;
+    public int                  MAX_NUM_OF_PARTICLES = 1000;
 
-    private Vect3D    gravity;
+    private Vect3D              gravity;
 
-    int               NUM_OF_PARTICLES;
-    Particle          particles[];
+    int                         NUM_OF_PARTICLES;
+    Particle                    particles[];
 
     public Simulator(final Map world)
     {
@@ -176,23 +132,14 @@ public class Simulator
      * paper.
      * </p>
      * 
-     * <p>
-     * <b>Note: the stackexchange answer is actually wrong in the last part, where: <br />
-     * velocity += timestep * (newAcceleration - acceleration) / 2; <br />
-     * should be: <br />
-     * velocity += timestep * (acceleration - newAcceleration) / 2;</b>
-     * </p>
-     * 
-     * <p>
-     * Note2: if particles will begin interacting with each other (attractors for example), this will need some
-     * modifications (updating all positions before recalculating new accelerations?)
-     * </p>
-     * 
      * @param dt
      *            how much to advance the simulation of
      */
     public void update(final double dt)
     {
+        // TODO: if particles will begin interacting with each other (attractors for example), this will need some
+        // modifications (updating all positions before recalculating new accelerations?)
+
         final Vect3D netGravity = new Vect3D();
         final Vect3D acc = new Vect3D();
         double buoyancy;
@@ -265,42 +212,42 @@ public class Simulator
             // we copy the new position over the old
             // and pre-calculate the next step from within
             // the new cell
-            if (world.canMoveTo(oldpos, newpos))
-            {
-                // we assign the values of newpos
-                // inside the actual particle center
-                oldpos.assign(newpos);
+            // if (world.canMoveTo(oldpos, newpos))
+            // {
+            // we assign the values of newpos
+            // inside the actual particle center
 
-                vel.x += dt * acc.x;
-                vel.y += dt * acc.y;
-                vel.z += dt * acc.z;
+            world.clampMovement(oldpos, newpos);
 
-                if (VERBOSE)
-                    System.out.println("vel: " + vel);
+            oldpos.assign(newpos);
 
-                force = cell.getForces(p);
+            vel.x += dt * acc.x;
+            vel.y += dt * acc.y;
+            vel.z += dt * acc.z;
 
-                // acc.x = acc.x - ((force.x / p.mass) + netGravity.x);
-                // acc.y = acc.y - ((force.y / p.mass) + netGravity.y);
-                // acc.z = acc.z - ((force.z / p.mass) + netGravity.z);
-                acc.x = -acc.x + (force.x / p.mass) + netGravity.x;
-                acc.y = -acc.y + (force.y / p.mass) + netGravity.y;
-                acc.z = -acc.z + (force.z / p.mass) + netGravity.z;
+            if (VERBOSE)
+                System.out.println("vel: " + vel);
 
-                if (VERBOSE)
-                    System.out.println("acc: " + acc);
+            force = cell.getForces(p);
 
-                vel.x += dt2 * acc.x;
-                vel.y += dt2 * acc.y;
-                vel.z += dt2 * acc.z;
+            acc.x = -acc.x + (force.x / p.mass) + netGravity.x;
+            acc.y = -acc.y + (force.y / p.mass) + netGravity.y;
+            acc.z = -acc.z + (force.z / p.mass) + netGravity.z;
 
-                // FIXME: kept only for debug,
-                // soon the acceleration should be removed from the Particle class
-                p.acc.assign(acc);
+            if (VERBOSE)
+                System.out.println("acc: " + acc);
 
-                if (VERBOSE)
-                    System.out.println("post: " + p);
-            }
+            vel.x += dt2 * acc.x;
+            vel.y += dt2 * acc.y;
+            vel.z += dt2 * acc.z;
+
+            // FIXME: kept only for debug,
+            // soon the acceleration should be removed from the Particle class
+            p.acc.assign(acc);
+
+            if (VERBOSE)
+                System.out.println("post: " + p);
+            // }
             // else
             // if we can't, we should move the particle
             // only up to the border between the cells

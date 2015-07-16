@@ -15,13 +15,15 @@
  */
 package shapes;
 
+import utils.Vect3D;
+
 /**
  * 
  * @author Fabio Ticconi
  */
 public interface Box extends Shape
 {
-    public Point getMinPoint();
+    public Vect3D getMinPoint();
 
-    public Point getMaxPoint();
+    public Vect3D getMaxPoint();
 }

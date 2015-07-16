@@ -1,9 +1,12 @@
 package maps;
 
-import shapes.Point;
+import shapes.Box;
+import utils.Vect3D;
 import cells.FluidCell;
+import cells.SolidCell;
 import engine.Cell;
-import engine.Simulator.Map;
+import engine.Collider;
+import engine.Map;
 
 /**
  * Copyright 2015 Fabio Ticconi
@@ -29,16 +32,14 @@ import engine.Simulator.Map;
  * 
  * @author Fabio Ticconi
  */
-public class SimpleMap implements Map
+public class SimpleMap implements Map, Box
 {
-    private static final Cell water  = new FluidCell(FluidCell.WATER_DENSITY, FluidCell.WATER_VISCOSITY);
-    private static final Cell air    = new FluidCell(FluidCell.AIR_DENSITY, FluidCell.AIR_VISCOSITY);
-    // private static final Cell ground = new SolidCell();
-    private static final Cell ground = new FluidCell(1100.0);
+    private static final FluidCell water  = new FluidCell(FluidCell.WATER_DENSITY, FluidCell.WATER_VISCOSITY);
+    private static final FluidCell air    = new FluidCell(FluidCell.AIR_DENSITY, FluidCell.AIR_VISCOSITY);
+    private static final SolidCell ground = new SolidCell();
 
-    int                       x_min, x_max;
-    int                       y_min, y_max;
-    int                       z_min, z_max;
+    private final Vect3D           min;
+    private final Vect3D           max;
 
     public SimpleMap(final int x_min,
                      final int x_max,
@@ -47,41 +48,45 @@ public class SimpleMap implements Map
                      final int z_min,
                      final int z_max)
     {
-        this.x_min = x_min;
-        this.x_max = x_max;
-        this.y_min = y_min;
-        this.y_max = y_max;
-        this.z_min = z_min;
-        this.z_max = z_max;
+        min = new Vect3D(x_min, y_min, z_min);
+        max = new Vect3D(x_max, y_max, z_max);
+
+        // air is when z > half
+        air.setMinPoint(new Vect3D(min.x, min.y, (max.z + min.z) / 2.0));
+        air.setMaxPoint(new Vect3D(max.x, max.y, max.z));
+
+        // water is when x < half
+        water.setMinPoint(new Vect3D(min.x, min.y, min.z));
+        water.setMaxPoint(new Vect3D((max.x + min.x) / 2.0, max.y, max.z));
+
+        // ground is the rest, ie z < half and x > half
+        ground.setMinPoint(new Vect3D((max.x + min.x) / 2.0, min.y, min.z));
+        ground.setMaxPoint(new Vect3D(max.x, max.y, (max.z + min.z) / 2.0));
     }
 
     @Override
-    public boolean isOverBounds(final Point p)
+    public boolean isOverBounds(final Vect3D p)
     {
-        final double x = p.getX();
-        final double y = p.getY();
-        final double z = p.getZ();
+        if (Collider.testPointBox(p, this))
+            return false;
 
-        if (x < x_min || x > x_max || y < y_min || y > y_max || z < z_min || z > z_max)
-            return true;
-
-        return false;
+        return true;
     }
 
     @Override
-    public Cell getCell(final Point p)
+    public Cell getCell(final Vect3D p)
     {
-        if (p.getZ() > (z_max + z_min) / 2)
+        if (Collider.testPointBox(p, air))
             return air;
 
-        if (p.getX() < (x_max + x_min) / 2)
+        if (Collider.testPointBox(p, water))
             return water;
 
         return ground;
     }
 
     @Override
-    public boolean areNeighbours(final Point p1, final Point p2)
+    public boolean areNeighbours(final Vect3D p1, final Vect3D p2)
     {
         final Cell c1 = getCell(p1);
         final Cell c2 = getCell(p2);
@@ -93,7 +98,7 @@ public class SimpleMap implements Map
     }
 
     @Override
-    public boolean canMoveTo(final Point from, final Point to)
+    public boolean canMoveTo(final Vect3D from, final Vect3D to)
     {
         // if the destination is over the bounds, we can't go there
         // if we are in a ground cell, we can't go there
@@ -102,5 +107,39 @@ public class SimpleMap implements Map
             return false;
 
         return true;
+    }
+
+    @Override
+    public void clampMovement(final Vect3D from, final Vect3D to)
+    {
+        // makes it impossible to move outside the world
+        to.max(min).min(max);
+
+        if (Collider.testPointBox(from, ground))
+            to.assign(from);
+        else if (Collider.testPointBox(to, ground))
+            to.max(ground.getMinPoint()).min(ground.getMaxPoint());
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Box#getMinPoint()
+     */
+    @Override
+    public Vect3D getMinPoint()
+    {
+        return min;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Box#getMaxPoint()
+     */
+    @Override
+    public Vect3D getMaxPoint()
+    {
+        return max;
     }
 }

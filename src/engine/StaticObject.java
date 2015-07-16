@@ -16,7 +16,6 @@
 package engine;
 
 import shapes.Box;
-import shapes.Point;
 import utils.Vect3D;
 
 /**
@@ -34,8 +33,8 @@ import utils.Vect3D;
  */
 public class StaticObject implements Box
 {
-    final Point min;
-    final Point max;
+    final Vect3D min;
+    final Vect3D max;
 
     public StaticObject()
     {
@@ -50,7 +49,8 @@ public class StaticObject implements Box
      * 
      * @see shapes.Box#getMinPoint()
      */
-    public Point getMinPoint()
+    @Override
+    public Vect3D getMinPoint()
     {
         return min;
     }
@@ -60,7 +60,8 @@ public class StaticObject implements Box
      * 
      * @see shapes.Box#getMaxPoint()
      */
-    public Point getMaxPoint()
+    @Override
+    public Vect3D getMaxPoint()
     {
         return max;
     }

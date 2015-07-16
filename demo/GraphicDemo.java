@@ -110,7 +110,7 @@ public class GraphicDemo extends JFrame
         return newP;
     }
 
-    public Vect3D transformToGraphics(final shapes.Point p)
+    public Vect3D transformToGraphics(final Vect3D p)
     {
         // top left corner is (-width/2,height/2)
         // bottom right corner is (width/2,-height/2)
@@ -120,8 +120,8 @@ public class GraphicDemo extends JFrame
 
         final Vect3D newP = new Vect3D();
 
-        newP.x = p.getX() + (width / 2);
-        newP.z = -(p.getZ() - (height / 2));
+        newP.x = p.x + (width / 2);
+        newP.z = -(p.z - (height / 2));
 
         return newP;
     }
@@ -135,18 +135,18 @@ public class GraphicDemo extends JFrame
 
             final Vect3D realPos = transformToSim(pos);
 
-            // p.setRadius(Math.random() / 5.0 + 0.1);
-            // p.setMass(Math.random() * 20.0 + 50.0);
-            p.setMass(150.0);
-            p.setRadius(0.25);
+            p.setRadius(Math.random() / 5.0 + 0.1);
+            p.setMass(Math.random() * 20.0 + 50.0);
+            // p.setMass(3670.0);
+            // p.setRadius(0.25);
 
             p.setCenter(realPos);
-            // p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
+            p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
 
             newParticles.add(p);
 
             if (VERBOSE)
-                System.out.println("Adding new particle at " + p.getCenter().getX() + ", " + p.getCenter().getZ());
+                System.out.println("Adding new particle at " + p.getCenter().x + ", " + p.getCenter().z);
         }
     }
 
@@ -158,7 +158,8 @@ public class GraphicDemo extends JFrame
             @Override
             public void mouseClicked(final MouseEvent e)
             {
-                addParticle();
+                for (int i = 0; i < 10; i++)
+                    addParticle();
             }
 
             @Override
@@ -218,16 +219,17 @@ public class GraphicDemo extends JFrame
             previousTime = currentTime;
 
             // sleep for a frame if we haven't done any
-            // job
-            if (elapsed < frameDuration)
-                try
-                {
-                    Thread.sleep((long) frameDuration);
-                } catch (final InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-
+            // work
+            /*
+             * if (elapsed < frameDuration)
+             * try
+             * {
+             * Thread.sleep((long) frameDuration);
+             * } catch (final InterruptedException e)
+             * {
+             * e.printStackTrace();
+             * }
+             */
             // if (elapsed > 1000)
             // elapsed = frameDuration;
 
@@ -235,7 +237,7 @@ public class GraphicDemo extends JFrame
 
             processInput();
 
-            if (lag >= frameDuration)
+            while (lag >= frameDuration)
             {
                 simulator.update(dt);
 
@@ -313,9 +315,9 @@ public class GraphicDemo extends JFrame
                                ", z:" +
                                z +
                                ", realx:" +
-                               p.getCenter().getX() +
+                               p.getCenter().x +
                                ", realz:" +
-                               p.getCenter().getZ() +
+                               p.getCenter().z +
                                ", m: " +
                                p.getMass() +
                                ", d:" +

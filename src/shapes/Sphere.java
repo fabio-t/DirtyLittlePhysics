@@ -15,12 +15,14 @@
  */
 package shapes;
 
+import utils.Vect3D;
+
 /**
  * Defines a spherical shape.
  */
 public interface Sphere extends Shape
 {
-    public Point getCenter();
+    public Vect3D getCenter();
 
     public double getRadius();
 }

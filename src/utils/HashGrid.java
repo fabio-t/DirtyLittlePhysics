@@ -18,10 +18,8 @@ package utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import shapes.Point;
-
 /**
- * A HashGrid implementation that flattens out 3D Points
+ * A HashGrid implementation that flattens out 3D Vect3Ds
  * into 1D cells. This allows for relatively fast
  * collision detection.
  * 
@@ -29,14 +27,14 @@ import shapes.Point;
  */
 public class HashGrid
 {
-    int                cellSize;
-    double             xFactor;
-    double             yFactor;
+    int                 cellSize;
+    double              xFactor;
+    double              yFactor;
 
-    int                length;
-    int                width;
+    int                 length;
+    int                 width;
 
-    ArrayList<Point>[] cells;
+    ArrayList<Vect3D>[] cells;
 
     /**
      * Creates a new Grid World with the given dimensions
@@ -84,79 +82,79 @@ public class HashGrid
     }
 
     /**
-     * Add all points in input to the respective
+     * Add all Vect3Ds in input to the respective
      * cells.
      * 
-     * @param points
+     * @param Vect3Ds
      */
-    public void addAll(final Point... points)
+    public void addAll(final Vect3D... Vect3Ds)
     {
-        for (int i = 0; i < points.length; i++)
-            add(points[i]);
+        for (int i = 0; i < Vect3Ds.length; i++)
+            add(Vect3Ds[i]);
     }
 
     /**
-     * Add all points in input to the respective cells.
+     * Add all Vect3Ds in input to the respective cells.
      * 
-     * @param points
+     * @param Vect3Ds
      */
-    public void addAll(final List<Point> points)
+    public void addAll(final List<Vect3D> Vect3Ds)
     {
-        for (final Point p : points)
+        for (final Vect3D p : Vect3Ds)
             add(p);
     }
 
     /**
-     * Add a single Point to its cell.
+     * Add a single Vect3D to its cell.
      * 
      * @param p
      */
-    public void add(final Point p)
+    public void add(final Vect3D p)
     {
         final int index = getIndex(p);
 
         if (cells[index] == null)
-            cells[index] = new ArrayList<Point>();
+            cells[index] = new ArrayList<Vect3D>();
 
         cells[index].add(p);
     }
 
     /**
-     * Returns all points sharing the same
+     * Returns all Vect3Ds sharing the same
      * coordinates of p.
      * 
      * @param p
      */
-    public List<Point> getCollisions(final Point p)
+    public List<Vect3D> getCollisions(final Vect3D p)
     {
         final int index = getIndex(p);
 
         if (cells[index] == null || cells[index].isEmpty())
             return null;
 
-        final ArrayList<Point> points = cells[index];
+        final ArrayList<Vect3D> Vect3Ds = cells[index];
 
-        final ArrayList<Point> collidingPoints = new ArrayList<Point>(points.size());
+        final ArrayList<Vect3D> collidingVect3Ds = new ArrayList<Vect3D>(Vect3Ds.size());
 
-        for (final Point p2 : points)
-            if (p.getX() == p2.getX() && p.getY() == p2.getY() && p.getZ() == p2.getZ())
-                collidingPoints.add(p2);
+        for (final Vect3D p2 : Vect3Ds)
+            if (p.x == p2.x && p.y == p2.y && p.z == p2.z)
+                collidingVect3Ds.add(p2);
 
-        return collidingPoints;
+        return collidingVect3Ds;
     }
 
     /**
-     * Removes all points from all cells.
+     * Removes all Vect3Ds from all cells.
      */
     public void clearAll()
     {
-        for (final ArrayList<Point> cell : cells)
+        for (final ArrayList<Vect3D> cell : cells)
             if (cell != null)
                 cell.clear();
     }
 
-    private int getIndex(final Point p)
+    private int getIndex(final Vect3D p)
     {
-        return (int) (p.getX() * xFactor + p.getY() * yFactor);
+        return (int) (p.x * xFactor + p.y * yFactor);
     }
 }
