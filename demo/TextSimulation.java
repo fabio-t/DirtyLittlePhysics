@@ -25,116 +25,102 @@ import engine.Simulator;
  */
 public class TextSimulation
 {
+    static int x_min, x_max, y_min, y_max, z_min, z_max;
+
+    public static void loop(final Simulator simulator, final long maxDurationInMillis, final int FPS)
+    {
+        final double frameDuration = 1000.0 / FPS;
+        final double dt = frameDuration / 1000.0;
+
+        System.out.println(String.format("FPS: %d, frameDuration: %f, dt: %f", FPS, frameDuration, dt));
+
+        long previousTime = System.currentTimeMillis();
+        long currentTime;
+
+        double lag = 0.0;
+        long elapsed;
+
+        final long start = System.nanoTime();
+        final long endCondition = start + maxDurationInMillis * 1000000l;
+        while (endCondition > System.nanoTime())
+        {
+            currentTime = System.currentTimeMillis();
+            elapsed = currentTime - previousTime;
+            previousTime = currentTime;
+
+            if (elapsed > 1000)
+                System.out.println("falling behind");
+
+            lag += elapsed;
+
+            while (lag >= frameDuration)
+            {
+                simulator.update(dt);
+
+                lag -= frameDuration;
+            }
+        }
+        final long end = System.nanoTime();
+
+        System.out.println(String.format("Simulated %d ms in %f ms. Lag: %f ms\n", maxDurationInMillis,
+                                         (end - start) / 1000000.0, lag));
+    }
+
+    public static void addParticles(final Simulator simulator, final int particles)
+    {
+        for (int i = 0; i < particles; i++)
+        {
+            final Particle p = new Particle();
+            p.setRadius(Math.random() / 2.0 + 0.1);
+            p.setMass(Math.random() * 100.0 + 50.0);
+            p.setCenter(new Vect3D(Math.random() * x_max * 2 - x_min, Math.random() * y_max * 2 - y_min, Math.random() *
+                                                                                                         z_max *
+                                                                                                         2 -
+                                                                                                         z_min));
+            p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
+            simulator.addParticle(p);
+        }
+
+        System.out.println(String.format("%d particles added\n", particles));
+    }
+
     public static void main(final String[] args)
     {
-        final double STEP = 0.01d;
+        x_min = y_min = z_min = -1000;
+        x_max = y_max = z_max = 1000;
 
-        final Simulator w = new Simulator(new SimpleMap(-100, 100, -100, 100, -100, 100));
+        final Simulator simulator = new Simulator(new SimpleMap(x_min, x_max, y_min, y_max, z_min, z_max));
 
-        final Particle p = new Particle();
+        System.out.println("Creating world..");
 
-        p.setCenter(new Vect3D(0.0, 0.0, 10000.0));
-        p.setMass(70d);
-        p.setRadius(0.2505887894d);
+        System.out.println("\n#####################\n");
 
-        // System.out.println("Mass: " + p.getMass() + ", Radius: " + p.radius + ", Density: " + p.density);
-        // p.vel.x = 5d;
-        // System.out.println("First particle: initial values");
-        // System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        // System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        // System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        // w.addParticle(p);
-        // w.update(STEP);
-        // System.out.println("After 1 step (" + STEP + " seconds):");
-        // System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        // System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        // System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        // w.update(STEP);
-        // System.out.println("After 1 step (" + STEP + " seconds):");
-        // System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        // System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        // System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        // w.update(STEP);
-        // System.out.println("After 1 step (" + STEP + " seconds):");
-        // System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        // System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        // System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        //
-        // long time1 = System.currentTimeMillis();
-        // System.out.print("Adding particles.. ");
-        // for (int i = 0; i < 100000; i++)
-        // {
-        // final Particle p2 = new Particle();
-        // p2.vel.x = 1d;
-        // w.addParticle(p2);
-        // }
-        // long time2 = System.currentTimeMillis();
-        // System.out.println((time2 - time1) + " ms");
-        //
-        // time1 = System.currentTimeMillis();
-        // System.out.print("Moving forward the simulation.. ");
-        // for (double t = 0d; t < 1d; t = t + STEP)
-        // w.update(STEP);
-        // time2 = System.currentTimeMillis();
-        // System.out.println((time2 - time1) + " ms");
-        //
-        // System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        // System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        // System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        //
-        // time1 = System.currentTimeMillis();
-        // System.out.print("Moving forward the simulation.. ");
-        // for (double t = 0d; t < 10d; t = t + STEP)
-        // w.update(STEP);
-        // time2 = System.currentTimeMillis();
-        // System.out.println((time2 - time1) + " ms");
-        //
-        // System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        // System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        // System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        //
-        // time1 = System.currentTimeMillis();
-        // System.out.print("Moving forward the simulation.. ");
-        // for (double t = 0d; t < 10d; t = t + STEP)
-        // w.update(STEP);
-        // time2 = System.currentTimeMillis();
-        // System.out.println((time2 - time1) + " ms");
-        //
-        // System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        // System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        // System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        //
-        // time1 = System.currentTimeMillis();
-        // System.out.print("Moving forward the simulation.. ");
-        // for (double t = 0d; t < 100d; t = t + STEP)
-        // w.update(STEP);
-        // time2 = System.currentTimeMillis();
-        // System.out.println((time2 - time1) + " ms");
-        //
-        // System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        // System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        // System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        //
-        // time1 = System.currentTimeMillis();
-        // System.out.print("Moving forward the simulation.. ");
-        // for (double t = 0d; t < 100d; t = t + STEP)
-        // w.update(STEP);
-        // time2 = System.currentTimeMillis();
-        // System.out.println((time2 - time1) + " ms");
-        //
-        // System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        // System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        // System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
-        //
-        // time1 = System.currentTimeMillis();
-        // System.out.print("Moving forward the simulation.. ");
-        // for (double t = 0d; t < 1000d; t = t + STEP)
-        // w.update(STEP);
-        // time2 = System.currentTimeMillis();
-        // System.out.println((time2 - time1) + " ms");
-        //
-        // System.out.println("Pos: " + p.center.getX() + " " + p.center.getY() + " " + p.center.getZ());
-        // System.out.println("Vel: " + p.vel.x + " " + p.vel.y + " " + p.vel.z);
-        // System.out.println("Acc: " + p.acc.x + " " + p.acc.y + " " + p.acc.z);
+        addParticles(simulator, 50000);
+
+        // 1 second
+        loop(simulator, 1000, 120);
+
+        // 5 seconds
+        loop(simulator, 5000, 120);
+
+        System.out.println("#####################\n");
+
+        addParticles(simulator, 50000);
+
+        // 1 second
+        loop(simulator, 1000, 120);
+
+        // 5 seconds
+        loop(simulator, 5000, 120);
+
+        System.out.println("#####################\n");
+
+        addParticles(simulator, 50000);
+
+        // 1 second
+        loop(simulator, 1000, 120);
+
+        // 5 seconds
+        loop(simulator, 5000, 120);
     }
 }

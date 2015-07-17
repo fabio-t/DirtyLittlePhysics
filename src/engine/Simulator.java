@@ -35,15 +35,14 @@ import utils.Vect3D;
  */
 public class Simulator
 {
-    public static final Vect3D  nullVector           = new Vect3D(0.0, 0.0, 0.0);
-
-    public static final boolean VERBOSE              = false;
+    public static final Vect3D  nullVector    = new Vect3D(0.0, 0.0, 0.0);
+    public static final boolean VERBOSE       = false;
 
     private final Map           world;
 
     // initial maximumb number of particles, used to
     // initialise the array
-    public int                  MAX_NUM_OF_PARTICLES = 1000;
+    public int                  MAX_PARTICLES = 1000;
 
     private Vect3D              gravity;
 
@@ -57,7 +56,7 @@ public class Simulator
 
         this.world = world;
 
-        particles = new Particle[MAX_NUM_OF_PARTICLES];
+        particles = new Particle[MAX_PARTICLES];
         NUM_OF_PARTICLES = 0;
 
         setGravity(new Vect3D(0d, 0d, -9.81d));
@@ -88,12 +87,12 @@ public class Simulator
         if (p == null)
             return;
 
-        if (NUM_OF_PARTICLES >= MAX_NUM_OF_PARTICLES)
+        if (NUM_OF_PARTICLES >= MAX_PARTICLES)
         {
-            MAX_NUM_OF_PARTICLES *= 2;
+            MAX_PARTICLES *= 2;
 
             // TODO: check heap exception
-            particles = Arrays.copyOf(particles, MAX_NUM_OF_PARTICLES);
+            particles = Arrays.copyOf(particles, MAX_PARTICLES);
         }
 
         particles[NUM_OF_PARTICLES++] = p;
@@ -206,7 +205,7 @@ public class Simulator
             if (VERBOSE)
                 System.out.println("newpos: " + newpos);
 
-            // cell = world.getCell(newpos);
+            cell = world.getCell(newpos);
 
             // if we can actually move to the new position,
             // we copy the new position over the old
