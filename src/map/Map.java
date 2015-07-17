@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package engine;
+package map;
 
 import utils.Vect3D;
 
@@ -65,6 +65,11 @@ public interface Map
      * If we are trying to move outside the world or within
      * unreacheable zones, the new position is corrected as
      * conservatively as possible.
+     * 
+     * <br />
+     * <br />
+     * 
+     * The from Vect3D is expected to be <b>modified</b>
      * 
      * @param from
      * @param to

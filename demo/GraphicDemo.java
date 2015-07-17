@@ -37,9 +37,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.JFrame;
 
+import map.Cell;
 import maps.SimpleMap;
 import utils.Vect3D;
-import engine.Cell;
 import engine.Particle;
 import engine.Simulator;
 
@@ -217,21 +217,6 @@ public class GraphicDemo extends JFrame
             currentTime = System.currentTimeMillis();
             elapsed = currentTime - previousTime;
             previousTime = currentTime;
-
-            // sleep for a frame if we haven't done any
-            // work
-            /*
-             * if (elapsed < frameDuration)
-             * try
-             * {
-             * Thread.sleep((long) frameDuration);
-             * } catch (final InterruptedException e)
-             * {
-             * e.printStackTrace();
-             * }
-             */
-            // if (elapsed > 1000)
-            // elapsed = frameDuration;
 
             lag += elapsed;
 

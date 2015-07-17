@@ -44,7 +44,7 @@ public class Particle implements Sphere
     final Vect3D center;
 
     double       radius;
-    double       mass;
+    double       invmass;
     double       density;
 
     final Vect3D vel;
@@ -56,8 +56,8 @@ public class Particle implements Sphere
         center = new Vect3D();
 
         radius = 1d;
-        mass = 1d;
-        density = Maths.sphereDensity(mass, radius);
+        invmass = 1d;
+        density = Maths.sphereDensity(1d, radius);
 
         vel = new Vect3D();
         acc = new Vect3D();
@@ -68,7 +68,7 @@ public class Particle implements Sphere
         oldCenter = new Vect3D(pos);
         center = pos;
 
-        this.mass = mass;
+        invmass = 1.0 / mass;
         this.radius = radius;
         density = Maths.sphereDensity(mass, radius);
 
@@ -85,8 +85,22 @@ public class Particle implements Sphere
      */
     public void setMass(final double mass)
     {
-        this.mass = mass;
+        invmass = 1.0 / mass;
         density = Maths.sphereDensity(mass, radius);
+    }
+
+    /**
+     * Overwrites the particle's mass using
+     * the inverse mass.
+     * It recalculates the density based on mass
+     * and radius.
+     * 
+     * @param mass
+     */
+    public void setInvMass(final double invmass)
+    {
+        this.invmass = invmass;
+        density = Maths.sphereDensity(1.0 / invmass, radius);
     }
 
     /**
@@ -99,7 +113,7 @@ public class Particle implements Sphere
     public void setRadius(final double radius)
     {
         this.radius = radius;
-        density = Maths.sphereDensity(mass, radius);
+        density = Maths.sphereDensity(1.0 / invmass, radius);
     }
 
     /**
@@ -164,7 +178,12 @@ public class Particle implements Sphere
 
     public double getMass()
     {
-        return mass;
+        return 1.0 / invmass;
+    }
+
+    public double getInvMass()
+    {
+        return invmass;
     }
 
     public Vect3D getVelocity()
@@ -175,6 +194,6 @@ public class Particle implements Sphere
     @Override
     public String toString()
     {
-        return String.format("particle: cent: %s, vel: %s, acc: %s", center, vel, acc);
+        return String.format("[%s, vel: %s, acc: %s, invmass: %f]", center, vel, acc, invmass);
     }
 }

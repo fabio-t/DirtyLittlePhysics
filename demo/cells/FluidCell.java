@@ -15,10 +15,10 @@
  */
 package cells;
 
+import map.Cell;
 import shapes.Box;
 import utils.Maths;
 import utils.Vect3D;
-import engine.Cell;
 import engine.Particle;
 
 /**
@@ -28,14 +28,10 @@ import engine.Particle;
 public class FluidCell implements Cell, Box
 {
     // Common densities
-    public final static double AIR_DENSITY     = 1.2d;      // pretty dense air
-    public final static double WATER_DENSITY   = 1000d;
-
-    public final static double AIR_VISCOSITY   = 0.00001983;
-    public final static double WATER_VISCOSITY = 0.001002;
+    public final static double AIR_DENSITY   = 1.2d; // pretty dense air
+    public final static double WATER_DENSITY = 1000d;
 
     public final double        density;
-    public final double        viscosity;
 
     private final Vect3D       min;
     private final Vect3D       max;
@@ -43,16 +39,6 @@ public class FluidCell implements Cell, Box
     public FluidCell(final double density)
     {
         this.density = density;
-        viscosity = 0.0;
-
-        min = new Vect3D();
-        max = new Vect3D();
-    }
-
-    public FluidCell(final double density, final double viscosity)
-    {
-        this.density = density;
-        this.viscosity = viscosity;
 
         min = new Vect3D();
         max = new Vect3D();
@@ -78,30 +64,16 @@ public class FluidCell implements Cell, Box
      */
     private Vect3D getDragForce(final Particle p)
     {
-        final Vect3D vel = p.getVelocity();
-
-        final Vect3D force = Maths.sphereDragForce(vel, density, p.getRadius());
-        // final Vect3D force = Maths.sphereStokeDragForce(vel, viscosity, p.getRadius());
+        final Vect3D force = Maths.sphereDragForce(p.getVelocity(), density, p.getRadius());
 
         return force;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see engine.Simulator.Cell#canPass(engine.Particle)
-     */
-    @Override
-    public boolean canPass(final Particle p)
-    {
-        return true;
     }
 
     /**
      * Reference: {@link http://lorien.ncl.ac.uk/ming/particle/cpe124p2.html}
      * 
      * 
-     * @see engine.Cell#getBuoyancy(engine.Particle)
+     * @see map.Cell#getBuoyancy(engine.Particle)
      */
     @Override
     public double getBuoyancy(final Particle p)

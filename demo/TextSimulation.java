@@ -81,7 +81,7 @@ public class TextSimulation
             simulator.addParticle(p);
         }
 
-        System.out.println(String.format("%d particles added\n", particles));
+        System.out.println(String.format("%d particles added, total: %d\n", particles, simulator.getParticlesNumber()));
     }
 
     public static void main(final String[] args)
@@ -94,6 +94,26 @@ public class TextSimulation
         System.out.println("Creating world..");
 
         System.out.println("\n#####################\n");
+
+        addParticles(simulator, 50000);
+
+        // 1 second
+        loop(simulator, 1000, 120);
+
+        // 5 seconds
+        loop(simulator, 5000, 120);
+
+        System.out.println("#####################\n");
+
+        addParticles(simulator, 50000);
+
+        // 1 second
+        loop(simulator, 1000, 120);
+
+        // 5 seconds
+        loop(simulator, 5000, 120);
+
+        System.out.println("#####################\n");
 
         addParticles(simulator, 50000);
 

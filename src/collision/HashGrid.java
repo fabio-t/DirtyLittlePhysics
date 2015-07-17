@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package utils;
+package collision;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import utils.Vect3D;
 
 /**
  * A HashGrid implementation that flattens out 3D Vect3Ds

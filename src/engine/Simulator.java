@@ -18,6 +18,8 @@ package engine;
 
 import java.util.Arrays;
 
+import map.Cell;
+import map.Map;
 import utils.Vect3D;
 
 /**
@@ -40,7 +42,7 @@ public class Simulator
 
     private final Map           world;
 
-    // initial maximumb number of particles, used to
+    // initial maximum number of particles, used to
     // initialise the array
     public int                  MAX_PARTICLES = 1000;
 
@@ -63,11 +65,11 @@ public class Simulator
     }
 
     /**
-     * Sets the gravity as an <b>acceleration</b>,
-     * therefore it will be directly added after the
-     * dynamic forces have been calculated and summed up
-     * together.<br />
+     * Sets the gravity as an <b>acceleration</b>
+     * vector.<br />
      * Example: for Earth, the vector would be (0, 0, -9.81).
+     * Incidentally, this is also the default value is
+     * this method is not called.
      * 
      * @param gravity
      */
@@ -77,10 +79,32 @@ public class Simulator
     }
 
     /**
+     * Returns a copy of the gravity vector.
+     * 
+     * @return
+     */
+    public Vect3D getGravity()
+    {
+        return new Vect3D(gravity);
+    }
+
+    /**
+     * Returns the number of currently active
+     * particles.
+     * 
+     * @return
+     */
+    public int getParticlesNumber()
+    {
+        return NUM_OF_PARTICLES;
+    }
+
+    /**
      * Adds a new particle to the simulator.<br />
      * O(1)
      * 
      * @param p
+     *            {@link Particle} to be added
      */
     public void addParticle(final Particle p)
     {
@@ -104,6 +128,7 @@ public class Simulator
      * O(N)
      * 
      * @param p
+     *            {@link Particle} to be removed
      */
     public void removeParticle(final Particle p)
     {
@@ -116,6 +141,15 @@ public class Simulator
                 particles[i] = particles[--NUM_OF_PARTICLES];
                 break;
             }
+    }
+
+    /**
+     * Removes all particles from the simulator. <br />
+     * O(1)
+     */
+    public void clearParticles()
+    {
+        NUM_OF_PARTICLES = 0;
     }
 
     /**
@@ -177,9 +211,7 @@ public class Simulator
             // Note: normally this would only make sense for the "z" dimension,
             // but who are we to limit your creativity?
             buoyancy = cell.getBuoyancy(p);
-            netGravity.x = gravity.x * buoyancy;
-            netGravity.y = gravity.y * buoyancy;
-            netGravity.z = gravity.z * buoyancy;
+            netGravity.assign(gravity).mul(buoyancy);
 
             force = cell.getForces(p);
 
@@ -188,12 +220,11 @@ public class Simulator
 
             // as the Gravitational force is equal to m*g,
             // we can add it after the cumulative force has been
-            // converted to acceleration - in this way, we store it
-            // as "g", independent of mass, and then add it to the
-            // newly found acceleration.
-            acc.x = (force.x / p.mass) + netGravity.x;
-            acc.y = (force.y / p.mass) + netGravity.y;
-            acc.z = (force.z / p.mass) + netGravity.z;
+            // converted to acceleration - we store it
+            // as "g", so we don't have to divide by mass here
+            acc.x = (force.x * p.invmass) + netGravity.x;
+            acc.y = (force.y * p.invmass) + netGravity.y;
+            acc.z = (force.z * p.invmass) + netGravity.z;
 
             if (VERBOSE)
                 System.out.println("acc: " + acc);
@@ -205,17 +236,11 @@ public class Simulator
             if (VERBOSE)
                 System.out.println("newpos: " + newpos);
 
-            cell = world.getCell(newpos);
-
-            // if we can actually move to the new position,
-            // we copy the new position over the old
-            // and pre-calculate the next step from within
-            // the new cell
-            // if (world.canMoveTo(oldpos, newpos))
-            // {
-            // we assign the values of newpos
-            // inside the actual particle center
-
+            // applies space-dependent correction of position.
+            // for example, if the world is non-toroidal it clamps
+            // newpos to be just at the border, if it was over it.
+            // it also applies collision detection and resolution
+            // with static objects
             world.clampMovement(oldpos, newpos);
 
             oldpos.assign(newpos);
@@ -227,11 +252,14 @@ public class Simulator
             if (VERBOSE)
                 System.out.println("vel: " + vel);
 
+            cell = world.getCell(newpos);
+            buoyancy = cell.getBuoyancy(p);
+            netGravity.assign(gravity).mul(buoyancy);
             force = cell.getForces(p);
 
-            acc.x = -acc.x + (force.x / p.mass) + netGravity.x;
-            acc.y = -acc.y + (force.y / p.mass) + netGravity.y;
-            acc.z = -acc.z + (force.z / p.mass) + netGravity.z;
+            acc.x = -acc.x + (force.x * p.invmass) + netGravity.x;
+            acc.y = -acc.y + (force.y * p.invmass) + netGravity.y;
+            acc.z = -acc.z + (force.z * p.invmass) + netGravity.z;
 
             if (VERBOSE)
                 System.out.println("acc: " + acc);
@@ -246,16 +274,6 @@ public class Simulator
 
             if (VERBOSE)
                 System.out.println("post: " + p);
-            // }
-            // else
-            // if we can't, we should move the particle
-            // only up to the border between the cells
-            // this also applies to the case of being
-            // at the edge of the world.
-            // FIXME: for now we don't care an use a
-            // bad heuristics: the velocity is halved and
-            // the problem is postponed to the next time step
-            // vel.div(2.0);
         }
     }
 }

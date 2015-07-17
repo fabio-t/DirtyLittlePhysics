@@ -15,9 +15,9 @@
  */
 package cells;
 
+import map.Cell;
 import shapes.Box;
 import utils.Vect3D;
-import engine.Cell;
 import engine.Particle;
 import engine.Simulator;
 
@@ -39,34 +39,12 @@ public class SolidCell implements Cell, Box
     /*
      * (non-Javadoc)
      * 
-     * @see engine.Simulator.Cell#canPass(engine.Particle)
-     */
-    @Override
-    public boolean canPass(final Particle p)
-    {
-        return false;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see engine.Simulator.Cell#getForces(engine.Particle)
      */
     @Override
     public Vect3D getForces(final Particle p)
     {
         return Simulator.nullVector;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see engine.Cell#getBuoyancy(engine.Particle)
-     */
-    @Override
-    public double getBuoyancy(final Particle p)
-    {
-        return 1.0;
     }
 
     /*
@@ -99,5 +77,16 @@ public class SolidCell implements Cell, Box
     public void setMaxPoint(final Vect3D v)
     {
         max.assign(v);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see map.Cell#getBuoyancy(engine.Particle)
+     */
+    @Override
+    public double getBuoyancy(final Particle p)
+    {
+        return 1.0;
     }
 }

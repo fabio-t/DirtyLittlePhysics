@@ -1,12 +1,12 @@
 package maps;
 
+import collision.Collider;
+import map.Cell;
+import map.Map;
 import shapes.Box;
 import utils.Vect3D;
 import cells.FluidCell;
 import cells.SolidCell;
-import engine.Cell;
-import engine.Collider;
-import engine.Map;
 
 /**
  * Copyright 2015 Fabio Ticconi
@@ -34,8 +34,8 @@ import engine.Map;
  */
 public class SimpleMap implements Map, Box
 {
-    private static final FluidCell water  = new FluidCell(FluidCell.WATER_DENSITY, FluidCell.WATER_VISCOSITY);
-    private static final FluidCell air    = new FluidCell(FluidCell.AIR_DENSITY, FluidCell.AIR_VISCOSITY);
+    private static final FluidCell water  = new FluidCell(FluidCell.WATER_DENSITY);
+    private static final FluidCell air    = new FluidCell(FluidCell.AIR_DENSITY);
     private static final SolidCell ground = new SolidCell();
 
     private final Vect3D           min;

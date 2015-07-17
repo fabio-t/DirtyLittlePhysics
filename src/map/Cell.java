@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package engine;
+
+package map;
 
 import utils.Vect3D;
+import engine.Particle;
 
 /**
  * Defines a generic "Cell", containing the main physical
@@ -32,17 +34,6 @@ public interface Cell
      * @return
      */
     public double getBuoyancy(Particle p);
-
-    /**
-     * Check if the particle can <i>move through</i> this block.
-     * This influences both the case a particle is already inside
-     * the block (and cannot go out), and when (more usually) the
-     * particle is outside and cannot get in (ie, the ground).
-     * 
-     * @param p
-     * @return
-     */
-    public boolean canPass(Particle p);
 
     /**
      * Returns the sum of all forces in this Cell that would be acting
