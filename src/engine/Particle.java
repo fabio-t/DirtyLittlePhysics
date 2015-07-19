@@ -17,6 +17,7 @@
 package engine;
 
 import shapes.Sphere;
+import utils.ImmutableVect3D;
 import utils.Maths;
 import utils.Vect3D;
 
@@ -46,6 +47,7 @@ public class Particle implements Sphere
     double       radius;
     double       invmass;
     double       density;
+    double       bounciness;
 
     final Vect3D vel;
     final Vect3D acc;
@@ -58,6 +60,7 @@ public class Particle implements Sphere
         radius = 1d;
         invmass = 1d;
         density = Maths.sphereDensity(1d, radius);
+        bounciness = 0.0;
 
         vel = new Vect3D();
         acc = new Vect3D();
@@ -71,6 +74,7 @@ public class Particle implements Sphere
         invmass = 1.0 / mass;
         this.radius = radius;
         density = Maths.sphereDensity(mass, radius);
+        bounciness = 0.0;
 
         this.vel = vel;
         acc = new Vect3D();
@@ -103,6 +107,11 @@ public class Particle implements Sphere
         density = Maths.sphereDensity(1.0 / invmass, radius);
     }
 
+    public void setBounciness(final double bounciness)
+    {
+        this.bounciness = bounciness;
+    }
+
     /**
      * Overwrites the particle's radius.
      * It recalculates the density based and mass
@@ -122,9 +131,9 @@ public class Particle implements Sphere
      * 
      * @param vel
      */
-    public void setVelocity(final Vect3D vel)
+    public void setVelocity(final ImmutableVect3D vel)
     {
-        this.vel.assign(vel);
+        this.vel.set(vel);
     }
 
     /**
@@ -135,7 +144,7 @@ public class Particle implements Sphere
      */
     public void setAcceleration(final Vect3D acc)
     {
-        this.acc.assign(acc);
+        this.acc.set(acc);
     }
 
     /**
@@ -146,7 +155,8 @@ public class Particle implements Sphere
      */
     public void setCenter(final Vect3D center)
     {
-        this.center.assign(center);
+        oldCenter.set(this.center);
+        this.center.set(center);
     }
 
     /*
@@ -171,6 +181,11 @@ public class Particle implements Sphere
         return radius;
     }
 
+    public Vect3D getOldCenter()
+    {
+        return oldCenter;
+    }
+
     public double getDensity()
     {
         return density;
@@ -186,9 +201,19 @@ public class Particle implements Sphere
         return invmass;
     }
 
+    public double getBounciness()
+    {
+        return bounciness;
+    }
+
     public Vect3D getVelocity()
     {
         return vel;
+    }
+
+    public Vect3D getAcceleration()
+    {
+        return acc;
     }
 
     @Override

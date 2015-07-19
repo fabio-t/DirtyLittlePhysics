@@ -19,6 +19,7 @@ import shapes.Box;
 import shapes.Sphere;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
+import engine.Simulator;
 
 /**
  * 
@@ -98,24 +99,23 @@ public abstract class Collider
         return false;
     }
 
-    public static void clampPointOutsideBox(final Vect3D from, final Vect3D to, final Box b)
+    public static double intersectRayBox(final Vect3D origin,
+                                         final Vect3D direction,
+                                         final Box b,
+                                         final Vect3D isec,
+                                         final Vect3D normalOut)
     {
-        final boolean verb = false;
-
         ImmutableVect3D normal;
 
         final Vect3D min = b.getMinPoint();
         final Vect3D max = b.getMaxPoint();
 
-        if (verb)
-            System.out.format("\nfrom: %s\nto: %s\nbmin: %s\nbmax: %s\n", from, to, min, max);
+        if (Simulator.VERBOSE)
+            System.out.format("origin: %s\ndirection: %s\ndir. length: %s\nbmin: %s\nbmax: %s\n", origin, direction,
+                              direction.length(), min, max);
 
-        // final Vect3D direction = Vect3D.sub(to, from).normalised();
-        final Vect3D direction = Vect3D.sub(to, from);
-        if (verb)
-            System.out.format("direction: %s (%f)\n", direction, direction.getLength());
         final Vect3D invDir = Vect3D.reciprocal(direction);
-        if (verb)
+        if (Simulator.VERBOSE)
             System.out.format("invDir: %s\n", invDir);
 
         final boolean signDirX = invDir.x < 0;
@@ -123,23 +123,23 @@ public abstract class Collider
         final boolean signDirZ = invDir.z < 0;
 
         Vect3D bbox = signDirX ? max : min;
-        final double xmindist = bbox.x - from.x;
+        final double xmindist = bbox.x - origin.x;
         double tmin = xmindist * invDir.x;
 
         normal = signDirX ? ImmutableVect3D.xaxis : ImmutableVect3D.xaxisinv;
 
         bbox = signDirX ? min : max;
-        double tmax = (bbox.x - from.x) * invDir.x;
+        double tmax = (bbox.x - origin.x) * invDir.x;
 
         bbox = signDirY ? max : min;
-        final double ymindist = bbox.y - from.y;
+        final double ymindist = bbox.y - origin.y;
         final double tymin = ymindist * invDir.y;
 
         bbox = signDirY ? min : max;
-        final double tymax = (bbox.y - from.y) * invDir.y;
+        final double tymax = (bbox.y - origin.y) * invDir.y;
 
         if ((tmin > tymax) || (tymin > tmax))
-            return;
+            return 0.0;
 
         // take the maximum of the t(x)min and tymin,
         // and take the correct normal now to save later
@@ -156,14 +156,14 @@ public abstract class Collider
         tmax = Math.min(tymax, tmax);
 
         bbox = signDirZ ? max : min;
-        final double zmindist = bbox.z - from.z;
+        final double zmindist = bbox.z - origin.z;
         final double tzmin = zmindist * invDir.z;
 
         bbox = signDirZ ? min : max;
-        final double tzmax = (bbox.z - from.z) * invDir.z;
+        final double tzmax = (bbox.z - origin.z) * invDir.z;
 
         if ((tmin > tzmax) || (tzmin > tmax))
-            return;
+            return 0.0;
 
         // take the maximum of (txmin,tymin) and tzmin,
         // and take the correct normal now to save later
@@ -179,20 +179,17 @@ public abstract class Collider
         // we don't need the normal here
         tmax = Math.min(tzmax, tmax);
 
-        final Vect3D isec = Vect3D.add(from, Vect3D.mul(direction, tmin));
-        if (verb)
-            System.out.format("isec: %s\n", isec);
+        isec.set(origin).add(Vect3D.mul(direction, tmin));
 
-        if (verb)
+        if (Simulator.VERBOSE)
+            System.out.format("isec: %s\n", isec);
+        if (Simulator.VERBOSE)
             System.out.format("tmin: %f\n", tmin);
-        if (verb)
+        if (Simulator.VERBOSE)
             System.out.format("tmax: %f\n", tmax);
 
-        isec.add(new Vect3D(normal).mul(0.1));
-        if (verb)
-            System.out.format("isec2: %s\n", isec);
-        to.assign(isec.sub(direction.mul(1.0)));
-        if (verb)
-            System.out.format("to: %s\n\n", to);
+        normalOut.set(normal);
+
+        return tmin;
     }
 }

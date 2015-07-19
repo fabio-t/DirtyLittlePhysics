@@ -54,4 +54,10 @@ public class ImmutableVect3D
         y = v.y;
         z = v.z;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("i(%f, %f, %f)", x, y, z);
+    }
 }

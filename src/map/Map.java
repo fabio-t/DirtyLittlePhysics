@@ -52,16 +52,6 @@ public interface Map
     public boolean areNeighbours(final Vect3D p1, final Vect3D p2);
 
     /**
-     * Returns true if the Vect3D can move to the destination,
-     * false otherwise.
-     * 
-     * @param from
-     * @param to
-     * @return
-     */
-    public boolean canMoveTo(final Vect3D from, final Vect3D to);
-
-    /**
      * If we are trying to move outside the world or within
      * unreacheable zones, the new position is corrected as
      * conservatively as possible.
@@ -74,5 +64,5 @@ public interface Map
      * @param from
      * @param to
      */
-    public void clampMovement(final Vect3D from, final Vect3D to);
+    public void correctPositions(final Vect3D from, final Vect3D to);
 }

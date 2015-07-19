@@ -42,5 +42,5 @@ public interface Cell
      * @param p
      * @return newly instanced force vector
      */
-    public Vect3D getForces(Particle p);
+    public Vect3D getForces(Particle p, double dt);
 }

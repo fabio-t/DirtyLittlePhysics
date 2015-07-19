@@ -58,7 +58,7 @@ public class Maths
     public static Vect3D sphereDragForce(final Vect3D vel, final double fluidDensity, final double radius)
     {
         // final Vect3D drag = new Vect3D(-Math.signum(vel.x), -Math.signum(vel.y), -Math.signum(vel.z));
-        final Vect3D drag = Vect3D.abs(vel).inverse();
+        final Vect3D drag = Vect3D.abs(vel).invert();
         drag.mul(vel).mul(Math.PI * radius * radius * fluidDensity * 0.25);
 
         /*

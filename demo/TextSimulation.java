@@ -1,4 +1,5 @@
 import maps.SimpleMap;
+import utils.ImmutableVect3D;
 import utils.Vect3D;
 import engine.Particle;
 import engine.Simulator;
@@ -77,7 +78,7 @@ public class TextSimulation
                                                                                                          z_max *
                                                                                                          2 -
                                                                                                          z_min));
-            p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
+            p.setVelocity(new ImmutableVect3D(Math.random() * 50 - 25, 0.0, 0.0));
             simulator.addParticle(p);
         }
 

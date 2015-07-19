@@ -103,30 +103,10 @@ public class SimpleMap implements Map, Box
     }
 
     @Override
-    public boolean canMoveTo(final Vect3D from, final Vect3D to)
-    {
-        // if the destination is over the bounds, we can't go there
-        // if we are in a ground cell, we can't go there
-        // if THAT point is a ground cell, we can't go there
-        if (isOverBounds(to) || Collider.testPointBox(from, ground) || Collider.testPointBox(to, ground))
-            return false;
-
-        return true;
-    }
-
-    @Override
-    public void clampMovement(final Vect3D from, final Vect3D to)
+    public void correctPositions(final Vect3D from, final Vect3D to)
     {
         // makes it impossible to move outside the world
         to.max(min).min(max);
-
-        // if we are within the ground, we can't move at all
-        if (Collider.testPointBox(from, ground))
-            to.assign(from);
-        // if we are outside but we want to move inside the ground,
-        // we can only go as far as the border
-        else if (Collider.testPointBox(to, ground))
-            Collider.clampPointOutsideBox(from, to, ground);
     }
 
     /*

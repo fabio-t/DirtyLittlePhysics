@@ -19,7 +19,9 @@ import map.Cell;
 import shapes.Box;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
+import collision.Collider;
 import engine.Particle;
+import engine.Simulator;
 
 /**
  * 
@@ -42,8 +44,69 @@ public class SolidCell implements Cell, Box
      * @see engine.Simulator.Cell#getForces(engine.Particle)
      */
     @Override
-    public Vect3D getForces(final Particle p)
+    public Vect3D getForces(final Particle p, final double dt)
     {
+        final Vect3D oldpos = p.getOldCenter();
+        final Vect3D pos = p.getCenter();
+
+        // if we are within the ground, we can't move at all
+        if (Collider.testPointBox(oldpos, this))
+        {
+            // remove the velocity completely, too
+            // this is generally not advised, but in this
+            // case we want to impose absolute immobility
+            p.setVelocity(ImmutableVect3D.zero);
+            pos.set(oldpos);
+
+            return new Vect3D(ImmutableVect3D.zero);
+        }
+        // if we are outside but we want to move inside the ground,
+        // we should move away a bit in the correct direction
+        else if (Collider.testPointBox(pos, this))
+        {
+            final Vect3D isec = new Vect3D();
+            final Vect3D normal = new Vect3D();
+
+            final Vect3D direction = Vect3D.sub(pos, oldpos).normalise();
+
+            final double t = Collider.intersectRayBox(oldpos, direction, this, isec, normal);
+
+            if (t == 0.0)
+            {
+                System.out.println("ERROR: there should be a collision");
+
+                return new Vect3D(ImmutableVect3D.zero);
+            }
+
+            // reflect the velocity vector symmetrically
+            // to the normal, then scale it down with the bounciness
+            final Vect3D vel = p.getVelocity();
+            final Vect3D n = new Vect3D(normal);
+            final double j = (Vect3D.dot(normal, vel) * -(1.0 + p.getBounciness())) / p.getInvMass();
+            n.mul(j); // impulse vector
+            // vel.set(0.0);
+
+            vel.add(n.mul(p.getInvMass()));
+
+            // move the particle to a point very close to
+            // to the intersection point, but outside the box.
+            // also, the only component we want to affect
+            // is the one along the normal
+            pos.set(isec.add(new Vect3D(normal).mul(0.0000001)));
+
+            if (Simulator.VERBOSE)
+            {
+                System.out.println();
+                System.out.println(j);
+                System.out.println(vel);
+                System.out.println(n);
+                System.out.println(pos);
+                System.out.println();
+            }
+
+            // return n;
+        }
+
         return new Vect3D(ImmutableVect3D.zero);
     }
 
@@ -60,7 +123,7 @@ public class SolidCell implements Cell, Box
 
     public void setMinPoint(final Vect3D v)
     {
-        min.assign(v);
+        min.set(v);
     }
 
     /*
@@ -76,7 +139,7 @@ public class SolidCell implements Cell, Box
 
     public void setMaxPoint(final Vect3D v)
     {
-        max.assign(v);
+        max.set(v);
     }
 
     /*

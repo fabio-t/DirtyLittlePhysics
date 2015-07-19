@@ -29,9 +29,9 @@ public class Vect3D
 
     public Vect3D()
     {
-        x = 0d;
-        y = 0d;
-        z = 0d;
+        x = 0.0;
+        y = 0.0;
+        z = 0.0;
     }
 
     public Vect3D(final double x, final double y, final double z)
@@ -61,12 +61,12 @@ public class Vect3D
         return String.format("(%f, %f, %f)", x, y, z);
     }
 
-    public double getLength()
+    public double length()
     {
         return Math.sqrt(dot(this, this));
     }
 
-    public double selfDot()
+    public double squaredLength()
     {
         return dot(this, this);
     }
@@ -79,16 +79,7 @@ public class Vect3D
         return true;
     }
 
-    public Vect3D reciprocal()
-    {
-        x = 1.0 / x;
-        y = 1.0 / y;
-        z = 1.0 / z;
-
-        return this;
-    }
-
-    public Vect3D assign(final Vect3D v)
+    public Vect3D set(final ImmutableVect3D v)
     {
         x = v.x;
         y = v.y;
@@ -97,7 +88,16 @@ public class Vect3D
         return this;
     }
 
-    public Vect3D assign(final double d)
+    public Vect3D set(final Vect3D v)
+    {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+
+        return this;
+    }
+
+    public Vect3D set(final double d)
     {
         x = d;
         y = d;
@@ -223,18 +223,27 @@ public class Vect3D
         return this;
     }
 
-    public Vect3D normalised()
+    public Vect3D normalise()
     {
-        div(getLength());
+        div(length());
 
         return this;
     }
 
-    public Vect3D inverse()
+    public Vect3D invert()
     {
         x = -x;
         y = -y;
         z = -z;
+
+        return this;
+    }
+
+    public Vect3D reciprocate()
+    {
+        x = 1.0 / x;
+        y = 1.0 / y;
+        z = 1.0 / z;
 
         return this;
     }
@@ -315,11 +324,16 @@ public class Vect3D
 
     public static Vect3D normalised(final Vect3D v)
     {
-        return new Vect3D(v).div(v.getLength());
+        return new Vect3D(v).div(v.length());
     }
 
     public static Vect3D reciprocal(final Vect3D v)
     {
-        return new Vect3D(v).reciprocal();
+        return new Vect3D(v).reciprocate();
+    }
+
+    public static Vect3D inverse(final Vect3D v)
+    {
+        return new Vect3D(v).invert();
     }
 }

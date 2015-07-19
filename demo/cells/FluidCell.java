@@ -18,7 +18,6 @@ package cells;
 import map.Cell;
 import shapes.Box;
 import utils.ImmutableVect3D;
-import utils.Maths;
 import utils.Vect3D;
 import engine.Particle;
 
@@ -53,7 +52,7 @@ public class FluidCell implements Cell, Box
      */
     public void setFlowSpeed(final Vect3D v)
     {
-        flowSpeed.assign(v);
+        flowSpeed.set(v);
     }
 
     /*
@@ -62,30 +61,13 @@ public class FluidCell implements Cell, Box
      * @see engine.Simulator.Cell#getForces(engine.Particle)
      */
     @Override
-    public Vect3D getForces(final Particle p)
+    public Vect3D getForces(final Particle p, final double dt)
     {
         // return getDragForce(p).add(getFlowForce(p));
 
         final Vect3D flow = Vect3D.abs(flowSpeed).mul(flowSpeed);
-        final Vect3D drag = Vect3D.abs(p.getVelocity()).inverse().mul(p.getVelocity());
+        final Vect3D drag = Vect3D.abs(p.getVelocity()).invert().mul(p.getVelocity());
         return flow.add(drag).mul(Math.PI * p.getRadius() * p.getRadius() * density * 0.25);
-    }
-
-    /**
-     * <p>
-     * Variation on the classic quadratic drag formula (not Stoke's!).
-     * </p>
-     * 
-     * @return newly instanced force opposite to the particle's direction
-     */
-    private Vect3D getDragForce(final Particle p)
-    {
-        return Maths.sphereDragForce(p.getVelocity(), density, p.getRadius());
-    }
-
-    private Vect3D getFlowForce(final Particle p)
-    {
-        return Maths.sphereFlowForce(flowSpeed, density, p.getRadius());
     }
 
     /**
@@ -114,7 +96,7 @@ public class FluidCell implements Cell, Box
 
     public void setMinPoint(final Vect3D v)
     {
-        min.assign(v);
+        min.set(v);
     }
 
     /*
@@ -130,6 +112,6 @@ public class FluidCell implements Cell, Box
 
     public void setMaxPoint(final Vect3D v)
     {
-        max.assign(v);
+        max.set(v);
     }
 }

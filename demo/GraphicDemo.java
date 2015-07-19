@@ -62,6 +62,8 @@ public class GraphicDemo extends JFrame
 
     private final SimpleMap                       map;
 
+    private final int                             NUM_PARTICLES;
+
     public GraphicDemo(final int width, final int height, final String title)
     {
         super();
@@ -89,6 +91,8 @@ public class GraphicDemo extends JFrame
 
         render.createBufferStrategy(2);
         bufferstrat = render.getBufferStrategy();
+
+        NUM_PARTICLES = 1;
 
         map = new SimpleMap(-width / 2, width / 2, -1, 1, -height / 2, height / 2);
         simulator = new Simulator(map);
@@ -137,8 +141,10 @@ public class GraphicDemo extends JFrame
 
             // p.setRadius(Math.random() / 5.0 + 0.1);
             // p.setMass(Math.random() * 20.0 + 50.0);
-            p.setMass(500.0);
+            // p.setBounciness(Math.random() * 0.5 + 0.25);
+            p.setMass(70.0);
             p.setRadius(0.25);
+            p.setBounciness(0.5);
 
             p.setCenter(realPos);
             // p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
@@ -158,8 +164,8 @@ public class GraphicDemo extends JFrame
             @Override
             public void mouseClicked(final MouseEvent e)
             {
-                // for (int i = 0; i < 10; i++)
-                addParticle();
+                for (int i = 0; i < NUM_PARTICLES; i++)
+                    addParticle();
             }
 
             @Override

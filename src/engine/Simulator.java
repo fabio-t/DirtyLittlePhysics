@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import map.Cell;
 import map.Map;
+import utils.ImmutableVect3D;
 import utils.Vect3D;
 
 /**
@@ -37,7 +38,7 @@ import utils.Vect3D;
  */
 public class Simulator
 {
-    public static final boolean VERBOSE       = false;
+    public static final boolean VERBOSE       = true;
 
     private final Map           world;
 
@@ -45,7 +46,7 @@ public class Simulator
     // initialise the array
     public int                  MAX_PARTICLES = 1000;
 
-    private Vect3D              gravity;
+    private ImmutableVect3D     gravity;
 
     int                         NUM_OF_PARTICLES;
     Particle                    particles[];
@@ -71,8 +72,26 @@ public class Simulator
      * this method is not called.
      * 
      * @param gravity
+     *            a mutable {@link Vect3D} that will
+     *            be copied into a new {@link ImmutableVect3D}
      */
     public void setGravity(final Vect3D gravity)
+    {
+        setGravity(new ImmutableVect3D(gravity));
+    }
+
+    /**
+     * Sets the gravity as an <b>acceleration</b>
+     * vector.<br />
+     * Example: for Earth, the vector would be (0, 0, -9.81).
+     * Incidentally, this is also the default value is
+     * this method is not called.
+     * 
+     * @param gravity
+     *            an {@link ImmutableVect3D} that will
+     *            overwrite the current gravity
+     */
+    public void setGravity(final ImmutableVect3D gravity)
     {
         this.gravity = gravity;
     }
@@ -82,9 +101,9 @@ public class Simulator
      * 
      * @return
      */
-    public Vect3D getGravity()
+    public ImmutableVect3D getGravity()
     {
-        return new Vect3D(gravity);
+        return gravity;
     }
 
     /**
@@ -173,54 +192,58 @@ public class Simulator
         // modifications (updating all positions before recalculating new accelerations?)
 
         final Vect3D netGravity = new Vect3D();
-        final Vect3D acc = new Vect3D();
         double buoyancy;
 
         // halve the delta t, to save
         // a few divisions
         final double dt2 = dt / 2.0d;
 
-        final Vect3D newpos = new Vect3D();
-
         Particle p;
+        Vect3D acc;
         Vect3D force;
         Vect3D vel;
         Vect3D oldpos;
+        Vect3D newpos;
         Cell cell;
         for (int i = 0; i < NUM_OF_PARTICLES; i++)
         {
             p = particles[i];
-
-            // oldpos is a reference to the actual
-            // particle center
-            oldpos = p.center;
-            // newpos is a temporary vector, we copy
-            // the current position inside
-            // and perform the updates with it
-            newpos.assign(oldpos);
-
+            // reset the acceleration vector
+            acc = p.acc.set(ImmutableVect3D.zero);
             vel = p.vel;
+            // oldpos will reference the current particle position,
+            // it's not modified but used often in what follows
+            oldpos = p.oldCenter.set(p.center);
+            // newpos will be updated in the following code,
+            // and thus update the actual particle position
+            newpos = p.center;
 
             if (VERBOSE)
                 System.out.println("pre: " + p);
 
+            // the world handler gives us a Cell
+            // using the current player position
             cell = world.getCell(p.center);
 
-            // Gravity must be corrected by the buoyancy (if the cell has one).
+            // gravity must be corrected by the buoyancy (if the cell has one).
             // Note: normally this would only make sense for the "z" dimension,
             // but who are we to limit your creativity?
             buoyancy = cell.getBuoyancy(p);
-            netGravity.assign(gravity).mul(buoyancy);
+            netGravity.set(gravity).mul(buoyancy);
 
-            force = cell.getForces(p);
+            // many kind of environmental force
+            // could be applied to the particle,
+            // for example fluid drag, friction,
+            // impact forces
+            force = cell.getForces(p, dt);
 
             if (VERBOSE)
                 System.out.println("force: " + force);
 
-            // as the Gravitational force is equal to m*g,
+            // as the gravitational force is equal to m*g,
             // we can add it after the cumulative force has been
             // converted to acceleration - we store it
-            // as "g", so we don't have to divide by mass here
+            // as "g", so we don't have to multiply by invmass here
             acc.x = (force.x * p.invmass) + netGravity.x;
             acc.y = (force.y * p.invmass) + netGravity.y;
             acc.z = (force.z * p.invmass) + netGravity.z;
@@ -238,14 +261,14 @@ public class Simulator
             // applies space-dependent correction of position.
             // for example, if the world is non-toroidal it clamps
             // newpos to be just at the border, if it was over it.
-            // it also applies collision detection and resolution
-            // with static objects
-            world.clampMovement(oldpos, newpos);
+            // Conversely, if toroidal it moves the particle to the
+            // right side
+            world.correctPositions(oldpos, newpos);
 
             if (VERBOSE)
                 System.out.println("newpos clamped: " + newpos);
 
-            oldpos.assign(newpos);
+            // oldpos.set(newpos);
 
             vel.x += dt * acc.x;
             vel.y += dt * acc.y;
@@ -256,8 +279,8 @@ public class Simulator
 
             cell = world.getCell(newpos);
             buoyancy = cell.getBuoyancy(p);
-            netGravity.assign(gravity).mul(buoyancy);
-            force = cell.getForces(p);
+            netGravity.set(gravity).mul(buoyancy);
+            force = cell.getForces(p, dt);
 
             acc.x = -acc.x + (force.x * p.invmass) + netGravity.x;
             acc.y = -acc.y + (force.y * p.invmass) + netGravity.y;
@@ -269,10 +292,6 @@ public class Simulator
             vel.x += dt2 * acc.x;
             vel.y += dt2 * acc.y;
             vel.z += dt2 * acc.z;
-
-            // FIXME: kept only for debug,
-            // soon the acceleration should be removed from the Particle class
-            p.acc.assign(acc);
 
             if (VERBOSE)
                 System.out.println("post: " + p);
