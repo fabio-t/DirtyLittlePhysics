@@ -48,6 +48,13 @@ public class Vect3D
         z = v.z;
     }
 
+    public Vect3D(final ImmutableVect3D v)
+    {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+    }
+
     @Override
     public String toString()
     {
@@ -57,6 +64,28 @@ public class Vect3D
     public double getLength()
     {
         return Math.sqrt(dot(this, this));
+    }
+
+    public double selfDot()
+    {
+        return dot(this, this);
+    }
+
+    public boolean equals(final Vect3D v)
+    {
+        if (x != v.x || y != v.y || z != v.z)
+            return false;
+
+        return true;
+    }
+
+    public Vect3D reciprocal()
+    {
+        x = 1.0 / x;
+        y = 1.0 / y;
+        z = 1.0 / z;
+
+        return this;
     }
 
     public Vect3D assign(final Vect3D v)
@@ -149,50 +178,63 @@ public class Vect3D
         return this;
     }
 
-    public Vect3D max(final Vect3D v1)
+    public Vect3D max(final Vect3D v)
     {
-        x = x > v1.x ? x
-                    : v1.x;
-        y = y > v1.y ? y
-                    : v1.y;
-        z = z > v1.z ? z
-                    : v1.z;
+        x = Math.max(x, v.x);
+        y = Math.max(y, v.x);
+        z = Math.max(z, v.z);
 
         return this;
     }
 
     public Vect3D max(final double d)
     {
-        x = x > d ? x
-                 : d;
-        y = y > d ? y
-                 : d;
-        z = z > d ? z
-                 : d;
+        x = Math.max(x, d);
+        y = Math.max(y, d);
+        z = Math.max(z, d);
 
         return this;
     }
 
-    public Vect3D min(final Vect3D v1)
+    public Vect3D min(final Vect3D v)
     {
-        x = x < v1.x ? x
-                    : v1.x;
-        y = y < v1.y ? y
-                    : v1.y;
-        z = z < v1.z ? z
-                    : v1.z;
+        x = Math.min(x, v.x);
+        y = Math.min(y, v.x);
+        z = Math.min(z, v.z);
 
         return this;
     }
 
     public Vect3D min(final double d)
     {
-        x = x < d ? x
-                 : d;
-        y = y < d ? y
-                 : d;
-        z = z < d ? z
-                 : d;
+        x = Math.min(x, d);
+        y = Math.min(y, d);
+        z = Math.min(z, d);
+
+        return this;
+    }
+
+    public Vect3D abs()
+    {
+        x = Math.abs(x);
+        y = Math.abs(y);
+        z = Math.abs(z);
+
+        return this;
+    }
+
+    public Vect3D normalised()
+    {
+        div(getLength());
+
+        return this;
+    }
+
+    public Vect3D inverse()
+    {
+        x = -x;
+        y = -y;
+        z = -z;
 
         return this;
     }
@@ -264,5 +306,20 @@ public class Vect3D
     public static double dot(final Vect3D v1, final Vect3D v2)
     {
         return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+    }
+
+    public static Vect3D abs(final Vect3D v)
+    {
+        return new Vect3D(Math.abs(v.x), Math.abs(v.y), Math.abs(v.z));
+    }
+
+    public static Vect3D normalised(final Vect3D v)
+    {
+        return new Vect3D(v).div(v.getLength());
+    }
+
+    public static Vect3D reciprocal(final Vect3D v)
+    {
+        return new Vect3D(v).reciprocal();
     }
 }

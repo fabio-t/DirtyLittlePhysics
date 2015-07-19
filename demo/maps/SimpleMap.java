@@ -1,12 +1,12 @@
 package maps;
 
-import collision.Collider;
 import map.Cell;
 import map.Map;
 import shapes.Box;
 import utils.Vect3D;
 import cells.FluidCell;
 import cells.SolidCell;
+import collision.Collider;
 
 /**
  * Copyright 2015 Fabio Ticconi
@@ -54,12 +54,17 @@ public class SimpleMap implements Map, Box
         // air is when z > half
         air.setMinPoint(new Vect3D(min.x, min.y, (max.z + min.z) / 2.0));
         air.setMaxPoint(new Vect3D(max.x, max.y, max.z));
+        // wind flows westward at constant X m/s
+        air.setFlowSpeed(new Vect3D(-100.0, 0.0, 0.0));
 
-        // water is when x < half
+        // water is when x < half and z < half
         water.setMinPoint(new Vect3D(min.x, min.y, min.z));
-        water.setMaxPoint(new Vect3D((max.x + min.x) / 2.0, max.y, max.z));
+        water.setMaxPoint(new Vect3D((max.x + min.x) / 2.0, max.y, (max.z + min.z) / 2.0));
+        // there is a eastward underwater current flowing
+        // at a constant X m/s
+        water.setFlowSpeed(new Vect3D(5.0, 0.0, 0.0));
 
-        // ground is the rest, ie z < half and x > half
+        // ground is the rest, ie x > half and z < half
         ground.setMinPoint(new Vect3D((max.x + min.x) / 2.0, min.y, min.z));
         ground.setMaxPoint(new Vect3D(max.x, max.y, (max.z + min.z) / 2.0));
     }
@@ -121,7 +126,7 @@ public class SimpleMap implements Map, Box
         // if we are outside but we want to move inside the ground,
         // we can only go as far as the border
         else if (Collider.testPointBox(to, ground))
-            to.max(ground.getMinPoint()).min(ground.getMaxPoint());
+            Collider.clampPointOutsideBox(from, to, ground);
     }
 
     /*

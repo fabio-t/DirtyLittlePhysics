@@ -90,7 +90,7 @@ public class GraphicDemo extends JFrame
         render.createBufferStrategy(2);
         bufferstrat = render.getBufferStrategy();
 
-        map = new SimpleMap(-width / 2, width / 2, 0, 0, -height / 2, height / 2);
+        map = new SimpleMap(-width / 2, width / 2, -1, 1, -height / 2, height / 2);
         simulator = new Simulator(map);
     }
 
@@ -135,13 +135,13 @@ public class GraphicDemo extends JFrame
 
             final Vect3D realPos = transformToSim(pos);
 
-            p.setRadius(Math.random() / 5.0 + 0.1);
-            p.setMass(Math.random() * 20.0 + 50.0);
-            // p.setMass(3670.0);
-            // p.setRadius(0.25);
+            // p.setRadius(Math.random() / 5.0 + 0.1);
+            // p.setMass(Math.random() * 20.0 + 50.0);
+            p.setMass(500.0);
+            p.setRadius(0.25);
 
             p.setCenter(realPos);
-            p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
+            // p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
 
             newParticles.add(p);
 
@@ -158,8 +158,8 @@ public class GraphicDemo extends JFrame
             @Override
             public void mouseClicked(final MouseEvent e)
             {
-                for (int i = 0; i < 10; i++)
-                    addParticle();
+                // for (int i = 0; i < 10; i++)
+                addParticle();
             }
 
             @Override
@@ -202,7 +202,7 @@ public class GraphicDemo extends JFrame
 
     public void loop()
     {
-        final double FPS = 66.0;
+        final double FPS = 60.0;
         final double frameDuration = 1000.0 / FPS;
         final double dt = frameDuration / 1000.0;
 

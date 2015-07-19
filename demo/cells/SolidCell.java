@@ -17,9 +17,9 @@ package cells;
 
 import map.Cell;
 import shapes.Box;
+import utils.ImmutableVect3D;
 import utils.Vect3D;
 import engine.Particle;
-import engine.Simulator;
 
 /**
  * 
@@ -44,7 +44,7 @@ public class SolidCell implements Cell, Box
     @Override
     public Vect3D getForces(final Particle p)
     {
-        return Simulator.nullVector;
+        return new Vect3D(ImmutableVect3D.zero);
     }
 
     /*

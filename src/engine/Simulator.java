@@ -37,7 +37,6 @@ import utils.Vect3D;
  */
 public class Simulator
 {
-    public static final Vect3D  nullVector    = new Vect3D(0.0, 0.0, 0.0);
     public static final boolean VERBOSE       = false;
 
     private final Map           world;
@@ -242,6 +241,9 @@ public class Simulator
             // it also applies collision detection and resolution
             // with static objects
             world.clampMovement(oldpos, newpos);
+
+            if (VERBOSE)
+                System.out.println("newpos clamped: " + newpos);
 
             oldpos.assign(newpos);
 

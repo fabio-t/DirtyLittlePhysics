@@ -97,50 +97,52 @@ public class TextSimulation
 
         addParticles(simulator, 50000);
 
+        final int FPS = 60;
+
         // 1 second
-        loop(simulator, 1000, 120);
+        loop(simulator, 1000, FPS);
 
         // 5 seconds
-        loop(simulator, 5000, 120);
+        loop(simulator, 5000, FPS);
 
         System.out.println("#####################\n");
 
         addParticles(simulator, 50000);
 
         // 1 second
-        loop(simulator, 1000, 120);
+        loop(simulator, 1000, FPS);
 
         // 5 seconds
-        loop(simulator, 5000, 120);
+        loop(simulator, 5000, FPS);
 
         System.out.println("#####################\n");
 
         addParticles(simulator, 50000);
 
         // 1 second
-        loop(simulator, 1000, 120);
+        loop(simulator, 1000, FPS);
 
         // 5 seconds
-        loop(simulator, 5000, 120);
+        loop(simulator, 5000, FPS);
 
         System.out.println("#####################\n");
 
         addParticles(simulator, 50000);
 
         // 1 second
-        loop(simulator, 1000, 120);
+        loop(simulator, 1000, FPS);
 
         // 5 seconds
-        loop(simulator, 5000, 120);
+        loop(simulator, 5000, FPS);
 
         System.out.println("#####################\n");
 
         addParticles(simulator, 50000);
 
         // 1 second
-        loop(simulator, 1000, 120);
+        loop(simulator, 1000, FPS);
 
         // 5 seconds
-        loop(simulator, 5000, 120);
+        loop(simulator, 5000, FPS);
     }
 }

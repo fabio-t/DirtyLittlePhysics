@@ -17,6 +17,7 @@ package cells;
 
 import map.Cell;
 import shapes.Box;
+import utils.ImmutableVect3D;
 import utils.Maths;
 import utils.Vect3D;
 import engine.Particle;
@@ -28,10 +29,11 @@ import engine.Particle;
 public class FluidCell implements Cell, Box
 {
     // Common densities
-    public final static double AIR_DENSITY   = 1.2d; // pretty dense air
+    public final static double AIR_DENSITY   = 1.1d;
     public final static double WATER_DENSITY = 1000d;
 
     public final double        density;
+    public final Vect3D        flowSpeed;
 
     private final Vect3D       min;
     private final Vect3D       max;
@@ -39,9 +41,19 @@ public class FluidCell implements Cell, Box
     public FluidCell(final double density)
     {
         this.density = density;
+        flowSpeed = new Vect3D(ImmutableVect3D.zero);
 
         min = new Vect3D();
         max = new Vect3D();
+    }
+
+    /**
+     * 
+     * @param v
+     */
+    public void setFlowSpeed(final Vect3D v)
+    {
+        flowSpeed.assign(v);
     }
 
     /*
@@ -52,7 +64,11 @@ public class FluidCell implements Cell, Box
     @Override
     public Vect3D getForces(final Particle p)
     {
-        return getDragForce(p);
+        // return getDragForce(p).add(getFlowForce(p));
+
+        final Vect3D flow = Vect3D.abs(flowSpeed).mul(flowSpeed);
+        final Vect3D drag = Vect3D.abs(p.getVelocity()).inverse().mul(p.getVelocity());
+        return flow.add(drag).mul(Math.PI * p.getRadius() * p.getRadius() * density * 0.25);
     }
 
     /**
@@ -64,9 +80,12 @@ public class FluidCell implements Cell, Box
      */
     private Vect3D getDragForce(final Particle p)
     {
-        final Vect3D force = Maths.sphereDragForce(p.getVelocity(), density, p.getRadius());
+        return Maths.sphereDragForce(p.getVelocity(), density, p.getRadius());
+    }
 
-        return force;
+    private Vect3D getFlowForce(final Particle p)
+    {
+        return Maths.sphereFlowForce(flowSpeed, density, p.getRadius());
     }
 
     /**
@@ -78,7 +97,8 @@ public class FluidCell implements Cell, Box
     @Override
     public double getBuoyancy(final Particle p)
     {
-        return ((p.getDensity() - density) / p.getDensity());
+        // return ((p.getDensity() - density) / p.getDensity());
+        return 1.0 - (density / p.getDensity());
     }
 
     /*

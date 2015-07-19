@@ -42,8 +42,6 @@ public class StaticObject implements Box
         max = new Vect3D();
     }
 
-    // TODO: density, at least
-
     /*
      * (non-Javadoc)
      * 

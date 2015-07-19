@@ -17,13 +17,14 @@ package collision;
 
 import shapes.Box;
 import shapes.Sphere;
+import utils.ImmutableVect3D;
 import utils.Vect3D;
 
 /**
  * 
  * @author Fabio Ticconi
  */
-public class Collider
+public abstract class Collider
 {
     public static boolean testBoxBox(final Box b1, final Box b2)
     {
@@ -73,16 +74,125 @@ public class Collider
 
     public static boolean testPointBox(final Vect3D p, final Box b)
     {
-        final Vect3D b_max = b.getMaxPoint();
-        final Vect3D b_min = b.getMinPoint();
+        final Vect3D max = b.getMaxPoint();
+        final Vect3D min = b.getMinPoint();
 
-        if (b_max.x < p.x || b_min.x > p.x)
+        if (max.x < p.x || min.x > p.x)
             return false;
-        if (b_max.y < p.y || b_min.y > p.y)
+        if (max.y < p.y || min.y > p.y)
             return false;
-        if (b_max.z < p.z || b_min.z > p.z)
+        if (max.z < p.z || min.z > p.z)
             return false;
 
         return true;
+    }
+
+    public static boolean testPointBoxExclusive(final Vect3D p, final Box b)
+    {
+        final Vect3D max = b.getMaxPoint();
+        final Vect3D min = b.getMinPoint();
+
+        if (p.x > min.x && p.x < max.x && p.y > min.y && p.y < max.y && p.z > min.z && p.z < max.z)
+            return true;
+
+        return false;
+    }
+
+    public static void clampPointOutsideBox(final Vect3D from, final Vect3D to, final Box b)
+    {
+        final boolean verb = false;
+
+        ImmutableVect3D normal;
+
+        final Vect3D min = b.getMinPoint();
+        final Vect3D max = b.getMaxPoint();
+
+        if (verb)
+            System.out.format("\nfrom: %s\nto: %s\nbmin: %s\nbmax: %s\n", from, to, min, max);
+
+        // final Vect3D direction = Vect3D.sub(to, from).normalised();
+        final Vect3D direction = Vect3D.sub(to, from);
+        if (verb)
+            System.out.format("direction: %s (%f)\n", direction, direction.getLength());
+        final Vect3D invDir = Vect3D.reciprocal(direction);
+        if (verb)
+            System.out.format("invDir: %s\n", invDir);
+
+        final boolean signDirX = invDir.x < 0;
+        final boolean signDirY = invDir.y < 0;
+        final boolean signDirZ = invDir.z < 0;
+
+        Vect3D bbox = signDirX ? max : min;
+        final double xmindist = bbox.x - from.x;
+        double tmin = xmindist * invDir.x;
+
+        normal = signDirX ? ImmutableVect3D.xaxis : ImmutableVect3D.xaxisinv;
+
+        bbox = signDirX ? min : max;
+        double tmax = (bbox.x - from.x) * invDir.x;
+
+        bbox = signDirY ? max : min;
+        final double ymindist = bbox.y - from.y;
+        final double tymin = ymindist * invDir.y;
+
+        bbox = signDirY ? min : max;
+        final double tymax = (bbox.y - from.y) * invDir.y;
+
+        if ((tmin > tymax) || (tymin > tmax))
+            return;
+
+        // take the maximum of the t(x)min and tymin,
+        // and take the correct normal now to save later
+        // computations
+        if (tymin > tmin)
+        {
+            tmin = tymin;
+
+            normal = signDirY ? ImmutableVect3D.yaxis : ImmutableVect3D.yaxisinv;
+        }
+
+        // take the minimum of t(x)max and tymax,
+        // we don't need the normal here
+        tmax = Math.min(tymax, tmax);
+
+        bbox = signDirZ ? max : min;
+        final double zmindist = bbox.z - from.z;
+        final double tzmin = zmindist * invDir.z;
+
+        bbox = signDirZ ? min : max;
+        final double tzmax = (bbox.z - from.z) * invDir.z;
+
+        if ((tmin > tzmax) || (tzmin > tmax))
+            return;
+
+        // take the maximum of (txmin,tymin) and tzmin,
+        // and take the correct normal now to save later
+        // computations
+        if (tzmin > tmin)
+        {
+            tmin = tzmin;
+
+            normal = signDirZ ? ImmutableVect3D.zaxis : ImmutableVect3D.zaxisinv;
+        }
+
+        // take the minimum of (txmax,tymax) and tzmax,
+        // we don't need the normal here
+        tmax = Math.min(tzmax, tmax);
+
+        final Vect3D isec = Vect3D.add(from, Vect3D.mul(direction, tmin));
+        if (verb)
+            System.out.format("isec: %s\n", isec);
+
+        if (verb)
+            System.out.format("tmin: %f\n", tmin);
+        if (verb)
+            System.out.format("tmax: %f\n", tmax);
+
+        isec.add(new Vect3D(normal).mul(0.1));
+        if (verb)
+            System.out.format("isec2: %s\n", isec);
+        to.assign(isec.sub(direction.mul(1.0)));
+        if (verb)
+            System.out.format("to: %s\n\n", to);
     }
 }
