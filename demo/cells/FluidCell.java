@@ -25,25 +25,25 @@ import engine.Particle;
  * 
  * @author Fabio Ticconi
  */
-public class FluidCell implements Cell, Box
+public class FluidCell extends Box implements Cell
 {
     // Common densities
     public final static double AIR_DENSITY   = 1.1d;
     public final static double WATER_DENSITY = 1000d;
 
-    public final double        density;
-    public final Vect3D        flowSpeed;
+    private final Vect3D       flowSpeed;
 
-    private final Vect3D       min;
-    private final Vect3D       max;
+    public final double        dragV;
+    public final double        density;
 
     public FluidCell(final double density)
     {
+        super(new Vect3D(), new Vect3D());
+
         this.density = density;
         flowSpeed = new Vect3D(ImmutableVect3D.zero);
 
-        min = new Vect3D();
-        max = new Vect3D();
+        dragV = 0.25 * Math.PI * density;
     }
 
     /**
@@ -67,7 +67,7 @@ public class FluidCell implements Cell, Box
 
         final Vect3D flow = Vect3D.abs(flowSpeed).mul(flowSpeed);
         final Vect3D drag = Vect3D.abs(p.getVelocity()).invert().mul(p.getVelocity());
-        return flow.add(drag).mul(Math.PI * p.getRadius() * p.getRadius() * density * 0.25);
+        return flow.add(drag).mul(dragV * p.getRadius() * p.getRadius());
     }
 
     /**
@@ -81,37 +81,5 @@ public class FluidCell implements Cell, Box
     {
         // return ((p.getDensity() - density) / p.getDensity());
         return 1.0 - (density / p.getDensity());
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Box#getMinPoint()
-     */
-    @Override
-    public Vect3D getMinPoint()
-    {
-        return min;
-    }
-
-    public void setMinPoint(final Vect3D v)
-    {
-        min.set(v);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Box#getMaxPoint()
-     */
-    @Override
-    public Vect3D getMaxPoint()
-    {
-        return max;
-    }
-
-    public void setMaxPoint(final Vect3D v)
-    {
-        max.set(v);
     }
 }

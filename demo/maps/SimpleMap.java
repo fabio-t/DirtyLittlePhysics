@@ -32,14 +32,11 @@ import collision.Collider;
  * 
  * @author Fabio Ticconi
  */
-public class SimpleMap implements Map, Box
+public class SimpleMap extends Box implements Map
 {
     private static final FluidCell water  = new FluidCell(FluidCell.WATER_DENSITY);
     private static final FluidCell air    = new FluidCell(FluidCell.AIR_DENSITY);
     private static final SolidCell ground = new SolidCell();
-
-    private final Vect3D           min;
-    private final Vect3D           max;
 
     public SimpleMap(final int x_min,
                      final int x_max,
@@ -48,14 +45,13 @@ public class SimpleMap implements Map, Box
                      final int z_min,
                      final int z_max)
     {
-        min = new Vect3D(x_min, y_min, z_min);
-        max = new Vect3D(x_max, y_max, z_max);
+        super(new Vect3D(x_min, y_min, z_min), new Vect3D(x_max, y_max, z_max));
 
         // air is when z > half
         air.setMinPoint(new Vect3D(min.x, min.y, (max.z + min.z) / 2.0));
         air.setMaxPoint(new Vect3D(max.x, max.y, max.z));
         // wind flows westward at constant X m/s
-        air.setFlowSpeed(new Vect3D(-100.0, 0.0, 0.0));
+        air.setFlowSpeed(new Vect3D(-50, 0.0, 0.0));
 
         // water is when x < half and z < half
         water.setMinPoint(new Vect3D(min.x, min.y, min.z));
@@ -72,7 +68,7 @@ public class SimpleMap implements Map, Box
     @Override
     public boolean isOverBounds(final Vect3D p)
     {
-        if (Collider.testPointBox(p, this))
+        if (Collider.test(p, this))
             return false;
 
         return true;
@@ -81,10 +77,10 @@ public class SimpleMap implements Map, Box
     @Override
     public Cell getCell(final Vect3D p)
     {
-        if (Collider.testPointBox(p, air))
+        if (Collider.test(p, air))
             return air;
 
-        if (Collider.testPointBox(p, water))
+        if (Collider.test(p, water))
             return water;
 
         return ground;
@@ -107,27 +103,5 @@ public class SimpleMap implements Map, Box
     {
         // makes it impossible to move outside the world
         to.max(min).min(max);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Box#getMinPoint()
-     */
-    @Override
-    public Vect3D getMinPoint()
-    {
-        return min;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Box#getMaxPoint()
-     */
-    @Override
-    public Vect3D getMaxPoint()
-    {
-        return max;
     }
 }

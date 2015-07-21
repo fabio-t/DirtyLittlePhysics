@@ -92,7 +92,7 @@ public class GraphicDemo extends JFrame
         render.createBufferStrategy(2);
         bufferstrat = render.getBufferStrategy();
 
-        NUM_PARTICLES = 1;
+        NUM_PARTICLES = 10;
 
         map = new SimpleMap(-width / 2, width / 2, -1, 1, -height / 2, height / 2);
         simulator = new Simulator(map);
@@ -139,12 +139,12 @@ public class GraphicDemo extends JFrame
 
             final Vect3D realPos = transformToSim(pos);
 
-            // p.setRadius(Math.random() / 5.0 + 0.1);
-            // p.setMass(Math.random() * 20.0 + 50.0);
-            // p.setBounciness(Math.random() * 0.5 + 0.25);
-            p.setMass(70.0);
-            p.setRadius(0.25);
-            p.setBounciness(0.5);
+            p.setRadius(Math.random() / 5.0 + 0.1);
+            p.setMass(Math.random() * 20.0 + 50.0);
+            p.setBounciness(Math.random() * 2.0);
+            // p.setMass(70.0);
+            // p.setRadius(0.25);
+            // p.setBounciness(0.5);
 
             p.setCenter(realPos);
             // p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));

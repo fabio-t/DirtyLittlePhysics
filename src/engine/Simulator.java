@@ -38,7 +38,7 @@ import utils.Vect3D;
  */
 public class Simulator
 {
-    public static final boolean VERBOSE       = true;
+    public static final boolean VERBOSE       = false;
 
     private final Map           world;
 
@@ -196,7 +196,7 @@ public class Simulator
 
         // halve the delta t, to save
         // a few divisions
-        final double dt2 = dt / 2.0d;
+        final double dt2 = dt / 2.0;
 
         Particle p;
         Vect3D acc;
@@ -213,17 +213,24 @@ public class Simulator
             vel = p.vel;
             // oldpos will reference the current particle position,
             // it's not modified but used often in what follows
-            oldpos = p.oldCenter.set(p.center);
+            oldpos = p.oldCenter.set(p.getCenter());
             // newpos will be updated in the following code,
             // and thus update the actual particle position
-            newpos = p.center;
+            newpos = p.getCenter();
+
+            // applies space-dependent correction of position.
+            // for example, if the world is non-toroidal it clamps
+            // newpos to be just at the border, if it was over it.
+            // Conversely, if toroidal it moves the particle to the
+            // right side
+            world.correctPositions(oldpos, newpos);
 
             if (VERBOSE)
-                System.out.println("pre: " + p);
+                System.out.println("\n#simulator#\npre: " + p);
 
             // the world handler gives us a Cell
             // using the current player position
-            cell = world.getCell(p.center);
+            cell = world.getCell(newpos);
 
             // gravity must be corrected by the buoyancy (if the cell has one).
             // Note: normally this would only make sense for the "z" dimension,
@@ -235,7 +242,7 @@ public class Simulator
             // could be applied to the particle,
             // for example fluid drag, friction,
             // impact forces
-            force = cell.getForces(p, dt);
+            force = cell.getForces(p, dt2);
 
             if (VERBOSE)
                 System.out.println("force: " + force);
@@ -258,11 +265,6 @@ public class Simulator
             if (VERBOSE)
                 System.out.println("newpos: " + newpos);
 
-            // applies space-dependent correction of position.
-            // for example, if the world is non-toroidal it clamps
-            // newpos to be just at the border, if it was over it.
-            // Conversely, if toroidal it moves the particle to the
-            // right side
             world.correctPositions(oldpos, newpos);
 
             if (VERBOSE)

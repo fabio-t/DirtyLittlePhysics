@@ -34,50 +34,22 @@ public class Maths
 
     public static Vect3D sphereFlowForce(final Vect3D fluidVelocity, final double fluidDensity, final double radius)
     {
-        // final Vect3D flow = new Vect3D(Math.signum(fluidVelocity.x), Math.signum(fluidVelocity.y),
-        // Math.signum(fluidVelocity.z));
-
         final Vect3D flow = Vect3D.abs(fluidVelocity);
         flow.mul(fluidVelocity).mul(Math.PI * radius * radius * fluidDensity * 0.25);
-
-        /*
-         * // we could have first normalised the copied
-         * // velocity vector in "flow", then multiplied that by the other factors,
-         * // however that's more costly and to similar effect
-         * if (fluidVelocity.x < 0.0)
-         * flow.x = -flow.x;
-         * if (fluidVelocity.y < 0.0)
-         * flow.y = -flow.y;
-         * if (fluidVelocity.z < 0.0)
-         * flow.z = -flow.z;
-         */
 
         return flow;
     }
 
-    public static Vect3D sphereDragForce(final Vect3D vel, final double fluidDensity, final double radius)
+    public static Vect3D sphereDragForce(final Vect3D velocity, final double fluidDensity, final double radius)
     {
-        // final Vect3D drag = new Vect3D(-Math.signum(vel.x), -Math.signum(vel.y), -Math.signum(vel.z));
-        final Vect3D drag = Vect3D.abs(vel).invert();
-        drag.mul(vel).mul(Math.PI * radius * radius * fluidDensity * 0.25);
-
-        /*
-         * // we could have first normalised the copied
-         * // velocity vector in "flow", then multiplied that by the other factors,
-         * // however that's more costly and to similar effect
-         * if (vel.x > 0.0)
-         * drag.x = -drag.x;
-         * if (vel.y > 0.0)
-         * drag.y = -drag.y;
-         * if (vel.z > 0.0)
-         * drag.z = -drag.z;
-         */
+        final Vect3D drag = Vect3D.abs(velocity).invert();
+        drag.mul(velocity).mul(Math.PI * radius * radius * fluidDensity * 0.25);
 
         return drag;
     }
 
-    public static Vect3D sphereStokeDragForce(final Vect3D vel, final double viscosity, final double radius)
+    public static Vect3D sphereStokeDragForce(final Vect3D velocity, final double viscosity, final double radius)
     {
-        return new Vect3D(vel).mul(-6.0 * Math.PI * radius * viscosity);
+        return new Vect3D(velocity).mul(-6.0 * Math.PI * radius * viscosity);
     }
 }

@@ -31,36 +31,26 @@ import utils.Vect3D;
  * 
  * @author Fabio Ticconi
  */
-public class StaticObject implements Box
+public class StaticObject extends Box
 {
-    final Vect3D min;
-    final Vect3D max;
+    final Vect3D center;
+    final Vect3D extent;
 
-    public StaticObject()
+    public StaticObject(final Vect3D min, final Vect3D max)
     {
-        min = new Vect3D();
-        max = new Vect3D();
+        super(min, max);
+
+        center = Vect3D.add(min, max).div(2.0);
+        extent = Vect3D.sub(max, min).div(2.0);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Box#getMinPoint()
-     */
-    @Override
-    public Vect3D getMinPoint()
+    public Vect3D getCenter()
     {
-        return min;
+        return center;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Box#getMaxPoint()
-     */
-    @Override
-    public Vect3D getMaxPoint()
+    public Vect3D getExtent()
     {
-        return max;
+        return extent;
     }
 }

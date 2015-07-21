@@ -27,7 +27,7 @@ import engine.Simulator;
  */
 public abstract class Collider
 {
-    public static boolean testBoxBox(final Box b1, final Box b2)
+    public static boolean test(final Box b1, final Box b2)
     {
         final Vect3D b1_max = b1.getMaxPoint();
         final Vect3D b1_min = b1.getMinPoint();
@@ -45,7 +45,7 @@ public abstract class Collider
         return true;
     }
 
-    public static boolean testSphereSphere(final Sphere s1, final Sphere s2)
+    public static boolean test(final Sphere s1, final Sphere s2)
     {
         final Vect3D d = Vect3D.sub(s1.getCenter(), s2.getCenter());
 
@@ -55,17 +55,17 @@ public abstract class Collider
         return dist2 < (radSum * radSum);
     }
 
-    public static boolean testSphereBox(final Sphere s, final Box b)
+    public static boolean test(final Sphere s, final Box b)
     {
         final Vect3D closestPoint = Vect3D.max(s.getCenter(), b.getMinPoint()).min(b.getMaxPoint());
 
         // calculate distance vector
         closestPoint.sub(s.getCenter());
 
-        return testPointSphere(closestPoint, s);
+        return test(closestPoint, s);
     }
 
-    public static boolean testPointSphere(final Vect3D p, final Sphere s)
+    public static boolean test(final Vect3D p, final Sphere s)
     {
         final double dist2 = Vect3D.dot(p, p);
         final double radSum = s.getRadius() + s.getRadius();
@@ -73,7 +73,7 @@ public abstract class Collider
         return dist2 < (radSum * radSum);
     }
 
-    public static boolean testPointBox(final Vect3D p, final Box b)
+    public static boolean test(final Vect3D p, final Box b)
     {
         final Vect3D max = b.getMaxPoint();
         final Vect3D min = b.getMinPoint();
@@ -99,6 +99,111 @@ public abstract class Collider
         return false;
     }
 
+    /**
+     * Finds the closest point from the given point to the given segment, if it exists.
+     * Taken from Ericson, "Real-time collision detection".
+     * 
+     * @param p
+     *            point outside of the segment
+     * @param start
+     *            one of the ends of the segment
+     * @param end
+     *            the other end of the segment
+     * @param isec
+     *            will contain the closest point to p on the segment. It
+     *            will always overwrite the content: if the point is outside
+     *            the segment interval, it will be clamped to either start or end
+     * 
+     * @return t as in d(t) = a + t*(b - a), or 0.0 or 1.0 if outside
+     */
+    public static double closestPointToSegment(final Vect3D p, final Vect3D start, final Vect3D end, final Vect3D isec)
+    {
+        final Vect3D segment = Vect3D.sub(end, start);
+        final Vect3D pointToStart = Vect3D.sub(start, p);
+
+        // project p onto the segment, but deferring a division
+        double t = Vect3D.dot(pointToStart, segment);
+
+        if (t <= 0.0)
+        {
+            // p projects outside the segment interval, on the start side; clamp to start
+            isec.set(start);
+            return 0.0;
+        }
+        else
+        {
+            final double denom = Vect3D.dot(segment, segment); // Always nonnegative since denom = ||segment||^2
+
+            if (t >= denom)
+            {
+                // p projects outside the segment interval, on the end side; clamp to end
+                isec.set(end);
+                return 1.0;
+            }
+            else
+            {
+                // p projects inside the segment interval; must do deferred divide now
+                t = t / denom;
+                isec.set(segment).mul(t).add(start);
+                return t;
+            }
+        }
+    }
+
+    /**
+     * Returns the squared distance between a point p and a segment.
+     * Taken from Ericson, "Real-time collision detection".
+     * 
+     * @param p
+     *            the point
+     * @param start
+     *            one of the ends of the segment
+     * @param end
+     *            the other end of the segment
+     * 
+     * @return squared distance
+     */
+    public static double sqDistPointSegment(final Vect3D p, final Vect3D start, final Vect3D end)
+    {
+        final Vect3D segment = Vect3D.sub(end, start);
+
+        final Vect3D pStart = Vect3D.sub(p, start);
+        final Vect3D pEnd = Vect3D.sub(p, end);
+
+        final double e = Vect3D.dot(pStart, segment);
+
+        // Handle cases where p projects outside the segment
+        if (e <= 0.0)
+            return Vect3D.dot(pStart, pStart);
+
+        final double f = Vect3D.dot(segment, segment);
+
+        if (e >= f)
+            return Vect3D.dot(pEnd, pEnd);
+
+        // Handle cases where p projects onto segment
+        return Vect3D.dot(pStart, pStart) - e * e / f;
+    }
+
+    /**
+     * Takes a Ray (composed of an origin vector and a normalised
+     * direction vector) as well as a {@link Box}, and finds the
+     * point of interesection of the ray with the box if one
+     * exists. Code adapted from toxiclibs.
+     * 
+     * @param origin
+     *            start point of the ray
+     * @param direction
+     *            normalised direction vector
+     * @param b
+     *            the AABB box to check against
+     * @param isec
+     *            will contain the intersection point if one exists
+     * @param normalOut
+     *            will contain the normal containing isec if found
+     * 
+     * @return the distance between origin and isec
+     */
     public static double intersectRayBox(final Vect3D origin,
                                          final Vect3D direction,
                                          final Box b,
@@ -111,8 +216,8 @@ public abstract class Collider
         final Vect3D max = b.getMaxPoint();
 
         if (Simulator.VERBOSE)
-            System.out.format("origin: %s\ndirection: %s\ndir. length: %s\nbmin: %s\nbmax: %s\n", origin, direction,
-                              direction.length(), min, max);
+            System.out.format("\n#collider#\norigin: %s\ndirection: %s\ndir. length: %s\nbmin: %s\nbmax: %s\n", origin,
+                              direction, direction.length(), min, max);
 
         final Vect3D invDir = Vect3D.reciprocal(direction);
         if (Simulator.VERBOSE)
@@ -182,11 +287,12 @@ public abstract class Collider
         isec.set(origin).add(Vect3D.mul(direction, tmin));
 
         if (Simulator.VERBOSE)
+        {
             System.out.format("isec: %s\n", isec);
-        if (Simulator.VERBOSE)
             System.out.format("tmin: %f\n", tmin);
-        if (Simulator.VERBOSE)
             System.out.format("tmax: %f\n", tmax);
+            System.out.format("normal: %s\n", normal);
+        }
 
         normalOut.set(normal);
 

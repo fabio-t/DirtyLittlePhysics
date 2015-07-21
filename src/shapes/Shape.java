@@ -15,11 +15,17 @@
  */
 package shapes;
 
+import utils.Vect3D;
+
 /**
  * 
  * @author Fabio Ticconi
  */
 public interface Shape
 {
+    public boolean intersects(Box b);
 
+    public boolean intersects(Sphere s);
+
+    public boolean intersects(Vect3D p);
 }

@@ -39,12 +39,11 @@ import utils.Vect3D;
  * 
  * @author Fabio Ticconi
  */
-public class Particle implements Sphere
+public class Particle extends Sphere
 {
     final Vect3D oldCenter;
-    final Vect3D center;
 
-    double       radius;
+    double       mass;
     double       invmass;
     double       density;
     double       bounciness;
@@ -54,12 +53,13 @@ public class Particle implements Sphere
 
     public Particle()
     {
-        oldCenter = new Vect3D();
-        center = new Vect3D();
+        super(new Vect3D(), 1.0);
 
-        radius = 1d;
-        invmass = 1d;
-        density = Maths.sphereDensity(1d, radius);
+        oldCenter = new Vect3D();
+
+        mass = 1.0;
+        invmass = 1.0;
+        density = Maths.sphereDensity(1.0, radius);
         bounciness = 0.0;
 
         vel = new Vect3D();
@@ -68,11 +68,12 @@ public class Particle implements Sphere
 
     public Particle(final double mass, final double radius, final Vect3D pos, final Vect3D vel)
     {
-        oldCenter = new Vect3D(pos);
-        center = pos;
+        super(pos, radius);
 
+        oldCenter = new Vect3D(pos);
+
+        this.mass = mass;
         invmass = 1.0 / mass;
-        this.radius = radius;
         density = Maths.sphereDensity(mass, radius);
         bounciness = 0.0;
 
@@ -89,6 +90,7 @@ public class Particle implements Sphere
      */
     public void setMass(final double mass)
     {
+        this.mass = mass;
         invmass = 1.0 / mass;
         density = Maths.sphereDensity(mass, radius);
     }
@@ -103,6 +105,7 @@ public class Particle implements Sphere
      */
     public void setInvMass(final double invmass)
     {
+        mass = 1.0 / mass;
         this.invmass = invmass;
         density = Maths.sphereDensity(1.0 / invmass, radius);
     }
@@ -159,28 +162,6 @@ public class Particle implements Sphere
         this.center.set(center);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Sphere#getCenter()
-     */
-    @Override
-    public Vect3D getCenter()
-    {
-        return center;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Sphere#getRadius()
-     */
-    @Override
-    public double getRadius()
-    {
-        return radius;
-    }
-
     public Vect3D getOldCenter()
     {
         return oldCenter;
@@ -193,7 +174,7 @@ public class Particle implements Sphere
 
     public double getMass()
     {
-        return 1.0 / invmass;
+        return mass;
     }
 
     public double getInvMass()

@@ -16,13 +16,62 @@
 package shapes;
 
 import utils.Vect3D;
+import collision.Collider;
 
 /**
  * Defines a spherical shape.
  */
-public interface Sphere extends Shape
+public abstract class Sphere implements Shape
 {
-    public Vect3D getCenter();
+    protected Vect3D center;
+    protected double radius;
 
-    public double getRadius();
+    public Sphere(final Vect3D center, final double radius)
+    {
+        this.center = center;
+        this.radius = radius;
+    }
+
+    public Vect3D getCenter()
+    {
+        return center;
+    }
+
+    public double getRadius()
+    {
+        return radius;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Shape#intersects(shapes.Box)
+     */
+    @Override
+    public boolean intersects(final Box b)
+    {
+        return Collider.test(this, b);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Shape#intersects(shapes.Sphere)
+     */
+    @Override
+    public boolean intersects(final Sphere s)
+    {
+        return Collider.test(this, s);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Shape#intersects(utils.Vect3D)
+     */
+    @Override
+    public boolean intersects(final Vect3D p)
+    {
+        return Collider.test(p, this);
+    }
 }
