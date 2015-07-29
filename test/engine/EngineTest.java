@@ -13,7 +13,7 @@ public class EngineTest
     @Before
     public void setUp() throws Exception
     {
-        simulator = new Simulator(new Simulator.SimpleMap());
+        // simulator = new Simulator();
     }
 
     @After

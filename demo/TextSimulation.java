@@ -1,6 +1,9 @@
+import map.Map;
 import maps.SimpleMap;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
+import colliders.ArrayGrid2D;
+import collision.ICollider;
 import engine.Particle;
 import engine.Simulator;
 
@@ -90,7 +93,10 @@ public class TextSimulation
         x_min = y_min = z_min = -1000;
         x_max = y_max = z_max = 1000;
 
-        final Simulator simulator = new Simulator(new SimpleMap(x_min, x_max, y_min, y_max, z_min, z_max));
+        final Map map = new SimpleMap(x_min, x_max, y_min, y_max, z_min, z_max);
+        final ICollider collider = new ArrayGrid2D((short) x_min, (short) x_max, (short) y_min, (short) y_max,
+                                                   (short) 10);
+        final Simulator simulator = new Simulator(map, collider);
 
         System.out.println("Creating world..");
 

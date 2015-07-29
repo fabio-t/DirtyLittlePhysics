@@ -2,7 +2,7 @@ package maps;
 
 import map.Cell;
 import map.Map;
-import shapes.Box;
+import utils.ImmutableVect3D;
 import utils.Vect3D;
 import cells.FluidCell;
 import cells.SolidCell;
@@ -32,11 +32,16 @@ import collision.Collider;
  * 
  * @author Fabio Ticconi
  */
-public class SimpleMap extends Box implements Map
+public class SimpleMap implements Map
 {
     private static final FluidCell water  = new FluidCell(FluidCell.WATER_DENSITY);
     private static final FluidCell air    = new FluidCell(FluidCell.AIR_DENSITY);
     private static final SolidCell ground = new SolidCell();
+
+    private final Vect3D           min;
+    private final Vect3D           max;
+
+    private ImmutableVect3D        gravity;
 
     public SimpleMap(final int x_min,
                      final int x_max,
@@ -45,7 +50,8 @@ public class SimpleMap extends Box implements Map
                      final int z_min,
                      final int z_max)
     {
-        super(new Vect3D(x_min, y_min, z_min), new Vect3D(x_max, y_max, z_max));
+        min = new Vect3D(x_min, y_min, z_min);
+        max = new Vect3D(x_max, y_max, z_max);
 
         // air is when z > half
         air.setMinPoint(new Vect3D(min.x, min.y, (max.z + min.z) / 2.0));
@@ -63,15 +69,8 @@ public class SimpleMap extends Box implements Map
         // ground is the rest, ie x > half and z < half
         ground.setMinPoint(new Vect3D((max.x + min.x) / 2.0, min.y, min.z));
         ground.setMaxPoint(new Vect3D(max.x, max.y, (max.z + min.z) / 2.0));
-    }
 
-    @Override
-    public boolean isOverBounds(final Vect3D p)
-    {
-        if (Collider.test(p, this))
-            return false;
-
-        return true;
+        gravity = new ImmutableVect3D(0d, 0d, -9.81d);
     }
 
     @Override
@@ -87,21 +86,37 @@ public class SimpleMap extends Box implements Map
     }
 
     @Override
-    public boolean areNeighbours(final Vect3D p1, final Vect3D p2)
-    {
-        final Cell c1 = getCell(p1);
-        final Cell c2 = getCell(p2);
-
-        if (c1 == c2)
-            return true;
-
-        return false;
-    }
-
-    @Override
     public void correctPositions(final Vect3D from, final Vect3D to)
     {
         // makes it impossible to move outside the world
         to.max(min).min(max);
+    }
+
+    /**
+     * Sets the gravity as an <b>acceleration</b>
+     * vector.<br />
+     * Example: for Earth, the vector would be (0, 0, -9.81).
+     * Incidentally, this is also the default value is
+     * this method is not called.
+     * 
+     * @param gravity
+     *            an {@link ImmutableVect3D} that will
+     *            overwrite the current gravity
+     */
+    @Override
+    public void setGravity(final ImmutableVect3D gravity)
+    {
+        this.gravity = gravity;
+    }
+
+    /**
+     * Returns a copy of the gravity vector.
+     * 
+     * @return gravity
+     */
+    @Override
+    public ImmutableVect3D getGravity()
+    {
+        return gravity;
     }
 }

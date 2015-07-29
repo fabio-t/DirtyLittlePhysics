@@ -38,12 +38,61 @@ public class StaticObject extends Box
 
     public StaticObject(final Vect3D min, final Vect3D max)
     {
-        super(min, max);
+        super(new Vect3D(min), new Vect3D(max));
 
-        center = Vect3D.add(min, max).div(2.0);
-        extent = Vect3D.sub(max, min).div(2.0);
+        center = new Vect3D();
+        extent = new Vect3D();
+
+        recalculateCenterExtent();
     }
 
+    public void setCenterExtent(final Vect3D center, final Vect3D extent)
+    {
+        this.center.set(center);
+        this.extent.set(extent);
+
+        recalculateMinMax();
+    }
+
+    public void setCenter(final Vect3D center)
+    {
+        this.center.set(center);
+
+        recalculateMinMax();
+    }
+
+    public void setExtent(final Vect3D extent)
+    {
+        this.extent.set(extent);
+
+        recalculateMinMax();
+    }
+
+    @Override
+    public void setMinPoint(final Vect3D min)
+    {
+        super.setMinPoint(min);
+
+        recalculateCenterExtent();
+    }
+
+    @Override
+    public void setMaxPoint(final Vect3D max)
+    {
+        super.setMaxPoint(max);
+
+        recalculateCenterExtent();
+    }
+
+    @Override
+    public void setMinMax(final Vect3D min, final Vect3D max)
+    {
+        super.setMinMax(min, max);
+
+        recalculateCenterExtent();
+    }
+
+    @Override
     public Vect3D getCenter()
     {
         return center;
@@ -52,5 +101,23 @@ public class StaticObject extends Box
     public Vect3D getExtent()
     {
         return extent;
+    }
+
+    private void recalculateMinMax()
+    {
+        min.set(center).sub(extent);
+        max.set(center).add(extent);
+    }
+
+    private void recalculateCenterExtent()
+    {
+        center.set(min).add(max).div(2.0);
+        extent.set(max).sub(min).div(2.0);
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("min: %s | max: %s | center: %s | extent: %s", min, max, center, extent);
     }
 }

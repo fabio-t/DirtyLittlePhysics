@@ -22,7 +22,7 @@ import collision.Collider;
  * 
  * @author Fabio Ticconi
  */
-public class Box implements Shape
+public abstract class Box implements Shape
 {
     protected final Vect3D min;
     protected final Vect3D max;
@@ -50,6 +50,12 @@ public class Box implements Shape
 
     public void setMaxPoint(final Vect3D max)
     {
+        this.max.set(max);
+    }
+
+    public void setMinMax(final Vect3D min, final Vect3D max)
+    {
+        this.min.set(min);
         this.max.set(max);
     }
 
@@ -84,5 +90,11 @@ public class Box implements Shape
     public boolean intersects(final Vect3D p)
     {
         return Collider.test(p, this);
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("min: %s | max: %s", min, max);
     }
 }

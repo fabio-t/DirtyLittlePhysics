@@ -185,4 +185,16 @@ public class SolidCell extends Box implements Cell
     {
         return 1.0;
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Shape#getCenter()
+     */
+    @Override
+    public Vect3D getCenter()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

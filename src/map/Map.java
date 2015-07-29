@@ -15,6 +15,7 @@
  */
 package map;
 
+import utils.ImmutableVect3D;
 import utils.Vect3D;
 
 /**
@@ -26,15 +27,6 @@ import utils.Vect3D;
 public interface Map
 {
     /**
-     * Returns true if the Vect3D is outside of the Map,
-     * false otherwise.
-     * 
-     * @param p
-     * @return
-     */
-    public boolean isOverBounds(final Vect3D p);
-
-    /**
      * Returns the Cell object including the given Vect3D.
      * 
      * @param p
@@ -43,26 +35,34 @@ public interface Map
     public Cell getCell(Vect3D p);
 
     /**
-     * Returns true if the two Vect3Ds belong to the same cell.
-     * 
-     * @param p1
-     * @param p2
-     * @return
-     */
-    public boolean areNeighbours(final Vect3D p1, final Vect3D p2);
-
-    /**
      * If we are trying to move outside the world or within
      * unreacheable zones, the new position is corrected as
      * conservatively as possible.
      * 
-     * <br />
-     * <br />
-     * 
-     * The from Vect3D is expected to be <b>modified</b>
-     * 
      * @param from
+     *            initial position
      * @param to
+     *            end position
      */
     public void correctPositions(final Vect3D from, final Vect3D to);
+
+    /**
+     * Returns the gravity currently set for this world.
+     * 
+     * @return an {@link ImmutableVect3D} representing the gravity as acceleration
+     */
+    public ImmutableVect3D getGravity();
+
+    /**
+     * Sets the gravity as an <b>acceleration</b>
+     * vector.<br />
+     * Example: for Earth, the vector would be (0, 0, -9.81).
+     * Incidentally, this is also the default value is
+     * this method is not called.
+     * 
+     * @param gravity
+     *            an {@link ImmutableVect3D} that will
+     *            overwrite the current gravity
+     */
+    public void setGravity(final ImmutableVect3D gravity);
 }

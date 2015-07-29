@@ -17,11 +17,14 @@
 package engine;
 
 import java.util.Arrays;
+import java.util.List;
 
 import map.Cell;
 import map.Map;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
+import collision.ICollider;
+import collision.StaticObject;
 
 /**
  * Entry Vect3D for the engine. Simulates the movement of all
@@ -40,70 +43,44 @@ public class Simulator
 {
     public static final boolean VERBOSE       = false;
 
-    private final Map           world;
+    private Map                 world;
+
+    private ICollider           collider;
 
     // initial maximum number of particles, used to
     // initialise the array
     public int                  MAX_PARTICLES = 1000;
 
-    private ImmutableVect3D     gravity;
-
     int                         NUM_OF_PARTICLES;
     Particle                    particles[];
 
-    public Simulator(final Map world)
+    public Simulator(final Map world, final ICollider collider)
     {
         if (world == null)
             throw new IllegalArgumentException("A world must be defined!");
 
+        if (collider == null)
+            throw new IllegalArgumentException("A collider must be defined!");
+
         this.world = world;
+        this.collider = collider;
 
         particles = new Particle[MAX_PARTICLES];
         NUM_OF_PARTICLES = 0;
-
-        setGravity(new Vect3D(0d, 0d, -9.81d));
     }
 
-    /**
-     * Sets the gravity as an <b>acceleration</b>
-     * vector.<br />
-     * Example: for Earth, the vector would be (0, 0, -9.81).
-     * Incidentally, this is also the default value is
-     * this method is not called.
-     * 
-     * @param gravity
-     *            a mutable {@link Vect3D} that will
-     *            be copied into a new {@link ImmutableVect3D}
-     */
-    public void setGravity(final Vect3D gravity)
+    public Simulator setMap(final Map map)
     {
-        setGravity(new ImmutableVect3D(gravity));
+        world = map;
+
+        return this;
     }
 
-    /**
-     * Sets the gravity as an <b>acceleration</b>
-     * vector.<br />
-     * Example: for Earth, the vector would be (0, 0, -9.81).
-     * Incidentally, this is also the default value is
-     * this method is not called.
-     * 
-     * @param gravity
-     *            an {@link ImmutableVect3D} that will
-     *            overwrite the current gravity
-     */
-    public void setGravity(final ImmutableVect3D gravity)
+    public Simulator setStaticCollider(final ICollider collider)
     {
-        this.gravity = gravity;
-    }
+        this.collider = collider;
 
-    /**
-     * Returns a copy of the gravity vector.
-     * 
-     * @return
-     */
-    public ImmutableVect3D getGravity()
-    {
-        return gravity;
+        return this;
     }
 
     /**
@@ -191,12 +168,15 @@ public class Simulator
         // TODO: if particles will begin interacting with each other (attractors for example), this will need some
         // modifications (updating all positions before recalculating new accelerations?)
 
+        final ImmutableVect3D gravity = world.getGravity();
         final Vect3D netGravity = new Vect3D();
         double buoyancy;
 
         // halve the delta t, to save
         // a few divisions
         final double dt2 = dt / 2.0;
+
+        List<StaticObject> collisions;
 
         Particle p;
         Vect3D acc;
@@ -218,6 +198,9 @@ public class Simulator
             // and thus update the actual particle position
             newpos = p.getCenter();
 
+            if (VERBOSE)
+                System.out.println("\n#simulator#\npre: " + p);
+
             // applies space-dependent correction of position.
             // for example, if the world is non-toroidal it clamps
             // newpos to be just at the border, if it was over it.
@@ -226,18 +209,27 @@ public class Simulator
             world.correctPositions(oldpos, newpos);
 
             if (VERBOSE)
-                System.out.println("\n#simulator#\npre: " + p);
+                System.out.println("pos corrected: " + p);
+
+            collisions = collider.getCollisions(newpos);
+
+            if (collisions.size() > 0)
+            {
+                System.out.println(p);
+                System.out.println("colliding with " + collisions.size() + " objects");
+                for (final StaticObject b : collisions)
+                    System.out.println(b);
+                System.exit(1);
+            }
 
             // the world handler gives us a Cell
             // using the current player position
             cell = world.getCell(newpos);
-
             // gravity must be corrected by the buoyancy (if the cell has one).
             // Note: normally this would only make sense for the "z" dimension,
             // but who are we to limit your creativity?
             buoyancy = cell.getBuoyancy(p);
             netGravity.set(gravity).mul(buoyancy);
-
             // many kind of environmental force
             // could be applied to the particle,
             // for example fluid drag, friction,
@@ -247,6 +239,8 @@ public class Simulator
             if (VERBOSE)
                 System.out.println("force: " + force);
 
+            // calculate acceleration from the accumulated
+            // forces.
             // as the gravitational force is equal to m*g,
             // we can add it after the cumulative force has been
             // converted to acceleration - we store it
@@ -268,9 +262,18 @@ public class Simulator
             world.correctPositions(oldpos, newpos);
 
             if (VERBOSE)
-                System.out.println("newpos clamped: " + newpos);
+                System.out.println("newpos corrected: " + newpos);
 
-            // oldpos.set(newpos);
+            collisions = collider.getCollisions(newpos);
+
+            if (collisions.size() > 0)
+            {
+                System.out.println(p);
+                System.out.println("colliding with " + collisions.size() + " objects");
+                for (final StaticObject b : collisions)
+                    System.out.println(b);
+                System.exit(1);
+            }
 
             vel.x += dt * acc.x;
             vel.y += dt * acc.y;

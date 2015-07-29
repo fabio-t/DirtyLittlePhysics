@@ -82,4 +82,16 @@ public class FluidCell extends Box implements Cell
         // return ((p.getDensity() - density) / p.getDensity());
         return 1.0 - (density / p.getDensity());
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Shape#getCenter()
+     */
+    @Override
+    public Vect3D getCenter()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

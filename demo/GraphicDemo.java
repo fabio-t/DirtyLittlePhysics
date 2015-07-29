@@ -38,31 +38,39 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.swing.JFrame;
 
 import map.Cell;
+import map.Map;
 import maps.SimpleMap;
 import utils.Vect3D;
+import colliders.ArrayGrid2D;
+import collision.ICollider;
+import collision.StaticObject;
 import engine.Particle;
 import engine.Simulator;
 
 public class GraphicDemo extends JFrame
 {
-    private static final long                     serialVersionUID = -6027400479565797010L;
+    private static final long                         serialVersionUID = -6027400479565797010L;
 
-    private static boolean                        VERBOSE          = false;
+    private static boolean                            VERBOSE          = false;
 
-    private final ArrayList<Particle>             particles        = new ArrayList<Particle>(500);
-    private final ConcurrentLinkedQueue<Particle> newParticles     = new ConcurrentLinkedQueue<Particle>();
+    private final ArrayList<Particle>                 particles        = new ArrayList<Particle>(500);
+    private final ConcurrentLinkedQueue<Particle>     newParticles     = new ConcurrentLinkedQueue<Particle>();
 
-    private BufferStrategy                        bufferstrat      = null;
-    private final Canvas                          render;
+    private final ArrayList<StaticObject>             objects          = new ArrayList<StaticObject>(500);
+    private final ConcurrentLinkedQueue<StaticObject> newObjects       = new ConcurrentLinkedQueue<StaticObject>();
 
-    private final Simulator                       simulator;
+    private BufferStrategy                            bufferstrat      = null;
+    private final Canvas                              render;
 
-    private final int                             width;
-    private final int                             height;
+    private final Simulator                           simulator;
 
-    private final SimpleMap                       map;
+    private final int                                 width;
+    private final int                                 height;
 
-    private final int                             NUM_PARTICLES;
+    private final Map                                 map;
+    private final ICollider                           collider;
+
+    private final int                                 NUM_PARTICLES;
 
     public GraphicDemo(final int width, final int height, final String title)
     {
@@ -92,10 +100,11 @@ public class GraphicDemo extends JFrame
         render.createBufferStrategy(2);
         bufferstrat = render.getBufferStrategy();
 
-        NUM_PARTICLES = 10;
+        NUM_PARTICLES = 1;
 
         map = new SimpleMap(-width / 2, width / 2, -1, 1, -height / 2, height / 2);
-        simulator = new Simulator(map);
+        collider = new ArrayGrid2D((short) (-width / 2), (short) (width / 2), (short) -10, (short) 10, (short) 10);
+        simulator = new Simulator(map, collider);
     }
 
     public Vect3D transformToSim(final Point p)
@@ -108,8 +117,8 @@ public class GraphicDemo extends JFrame
 
         final Vect3D newP = new Vect3D();
 
-        newP.x = p.x - (width / 2);
-        newP.z = -p.y + (height / 2);
+        newP.x = p.x - (width / 2.0);
+        newP.z = -p.y + (height / 2.0);
 
         return newP;
     }
@@ -124,8 +133,8 @@ public class GraphicDemo extends JFrame
 
         final Vect3D newP = new Vect3D();
 
-        newP.x = p.x + (width / 2);
-        newP.z = -(p.z - (height / 2));
+        newP.x = p.x + (width / 2.0);
+        newP.z = -(p.z - (height / 2.0));
 
         return newP;
     }
@@ -133,11 +142,12 @@ public class GraphicDemo extends JFrame
     public void addParticle()
     {
         final Point pos = render.getMousePosition();
+
         if (pos != null)
         {
-            final Particle p = new Particle();
-
             final Vect3D realPos = transformToSim(pos);
+
+            final Particle p = new Particle();
 
             p.setRadius(Math.random() / 5.0 + 0.1);
             p.setMass(Math.random() * 20.0 + 50.0);
@@ -156,6 +166,27 @@ public class GraphicDemo extends JFrame
         }
     }
 
+    public void addStaticObject()
+    {
+        final Point pos = render.getMousePosition();
+
+        if (pos != null)
+
+        {
+            final Vect3D realPos = transformToSim(pos);
+
+            final StaticObject o = new StaticObject(realPos, realPos); // fake min-max
+
+            final Vect3D extent = new Vect3D(Math.random() + 0.1, 0.5, Math.random() + 0.1).mul(100);
+            o.setCenterExtent(realPos, extent); // will correct min-max too
+
+            newObjects.add(o);
+
+            if (VERBOSE)
+                System.out.println("Adding new static object at " + o.getCenter().x + ", " + o.getCenter().z);
+        }
+    }
+
     public void pollInput()
     {
         render.addMouseListener(new MouseListener()
@@ -164,8 +195,11 @@ public class GraphicDemo extends JFrame
             @Override
             public void mouseClicked(final MouseEvent e)
             {
-                for (int i = 0; i < NUM_PARTICLES; i++)
-                    addParticle();
+                if (e.isShiftDown())
+                    addStaticObject();
+                else
+                    for (int i = 0; i < NUM_PARTICLES; i++)
+                        addParticle();
             }
 
             @Override
@@ -198,11 +232,18 @@ public class GraphicDemo extends JFrame
     private void processInput()
     {
         final Particle p = newParticles.poll();
+        final StaticObject o = newObjects.poll();
+
+        if (o != null)
+        {
+            objects.add(o);
+            collider.add(o);
+        }
 
         if (p != null)
         {
-            particles.add(p);
             simulator.addParticle(p);
+            particles.add(p);
         }
     }
 
@@ -265,6 +306,7 @@ public class GraphicDemo extends JFrame
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
+                renderBoxes(g2d);
                 renderParticles(g2d);
 
                 g2d.dispose();
@@ -277,6 +319,12 @@ public class GraphicDemo extends JFrame
     {
         for (final Particle p : particles)
             renderParticle(g2d, p);
+    }
+
+    public void renderBoxes(final Graphics2D g2d)
+    {
+        for (final StaticObject b : objects)
+            renderBox(g2d, b);
     }
 
     public void renderParticle(final Graphics2D g, final Particle p)
@@ -318,7 +366,44 @@ public class GraphicDemo extends JFrame
         final Ellipse2D.Double circle = new Ellipse2D.Double(x, z, diameter, diameter);
         g2d.fill(circle);
 
-        g2d.dispose();
+        // g2d.dispose();
+    }
+
+    public void renderBox(final Graphics2D g, final StaticObject b)
+    {
+        final Graphics2D g2d = (Graphics2D) g.create();
+
+        g2d.setColor(Color.red);
+
+        final Vect3D maxExtent = b.getExtent();
+        final Vect3D newPoint = transformToGraphics(b.getCenter());
+
+        final double x = newPoint.x - maxExtent.x;
+        final double z = newPoint.z - maxExtent.z;
+
+        if (VERBOSE)
+        {
+            final Cell c = map.getCell(b.getCenter());
+
+            final String celltype = c.getClass().getName();
+
+            System.out.println("rendering static object (" +
+                               celltype +
+                               "): x:" +
+                               x +
+                               ", z:" +
+                               z +
+                               ", realx:" +
+                               b.getCenter().x +
+                               ", realz:" +
+                               b.getCenter().z +
+                               ")");
+        }
+
+        final Rectangle2D.Double rect = new Rectangle2D.Double(x, z, maxExtent.x, maxExtent.z);
+        g2d.fill(rect);
+
+        // g2d.dispose();
     }
 
     public static void main(final String[] args)

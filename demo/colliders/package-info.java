@@ -13,21 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package shapes;
-
-import utils.Vect3D;
-
 /**
  * 
  * @author Fabio Ticconi
  */
-public interface Shape
-{
-    public Vect3D getCenter();
-
-    public boolean intersects(Box b);
-
-    public boolean intersects(Sphere s);
-
-    public boolean intersects(Vect3D p);
-}
+package colliders;

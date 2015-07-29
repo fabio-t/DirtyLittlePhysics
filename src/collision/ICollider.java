@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package shapes;
+package collision;
+
+import java.util.List;
 
 import utils.Vect3D;
 
@@ -21,13 +23,9 @@ import utils.Vect3D;
  * 
  * @author Fabio Ticconi
  */
-public interface Shape
+public interface ICollider
 {
-    public Vect3D getCenter();
+    public void add(final StaticObject p);
 
-    public boolean intersects(Box b);
-
-    public boolean intersects(Sphere s);
-
-    public boolean intersects(Vect3D p);
+    public List<StaticObject> getCollisions(final Vect3D p);
 }

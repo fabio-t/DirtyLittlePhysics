@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package collision;
+package colliders;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import collision.ICollider;
+import collision.StaticObject;
 
 import utils.Vect3D;
 
@@ -27,14 +30,15 @@ import utils.Vect3D;
  * 
  * @author Fabio Ticconi
  */
-public class ArrayGrid2D
+public class ArrayGrid2D implements ICollider
 {
     int                       cellSize;
-    double                    xFactor;
-    double                    yFactor;
+    double                    invCellSize;
 
-    int                       length;
-    int                       width;
+    int                       rows;
+    int                       cols;
+
+    int                       offset;
 
     ArrayList<StaticObject>[] cells;
 
@@ -62,10 +66,6 @@ public class ArrayGrid2D
      * information in case you want to go down that route is
      * Ericson, "Real-time collision detection".
      * 
-     * @param x
-     *            the absolute "length" of the world
-     * @param y
-     *            the absolute "width" of the world
      * @param cellSize
      *            the length of one (square) cell
      */
@@ -74,13 +74,14 @@ public class ArrayGrid2D
     {
         this.cellSize = cellSize;
 
-        length = (x_max - x_min) / cellSize;
-        width = (y_max - y_min) / cellSize;
+        cols = (int) Math.ceil((double) (x_max - x_min) / cellSize);
+        rows = (int) Math.ceil((double) (y_max - y_min) / cellSize);
 
-        xFactor = 1.0 / cellSize;
-        yFactor = xFactor * width;
+        offset = -y_min * cols - x_min;
 
-        cells = new ArrayList[length * width];
+        invCellSize = 1.0 / cellSize;
+
+        cells = new ArrayList[cols * rows];
     }
 
     /**
@@ -111,9 +112,12 @@ public class ArrayGrid2D
      * 
      * @param p
      */
+    @Override
     public void add(final StaticObject p)
     {
         final int index = getIndex(p);
+
+        System.out.println("b: " + p + " -> " + index);
 
         if (cells[index] == null)
             cells[index] = new ArrayList<StaticObject>();
@@ -144,9 +148,12 @@ public class ArrayGrid2D
         return collidingObjects;
     }
 
+    @Override
     public List<StaticObject> getCollisions(final Vect3D p)
     {
         final int index = getIndex(p);
+
+        System.out.println("p: " + p + " -> " + index);
 
         final List<StaticObject> objects = getObjectsAround(index);
 
@@ -159,15 +166,48 @@ public class ArrayGrid2D
         return collidingObjects;
     }
 
-    // TODO
     public List<StaticObject> getObjectsAround(final int index)
     {
+        final int x = index / rows;
+        final int y = index % rows;
+
+        // System.out.println(x + " " + y);
+
+        int tempx;
+        int tempy;
+        int temp;
+
         final ArrayList<StaticObject> objects = new ArrayList<StaticObject>();
 
         for (int i = -1; i <= 1; i++)
+        {
+            tempx = x + i;
+
+            // System.out.println("tempx:" + tempx);
+
+            if (tempx < 0 || tempx >= cols)
+                continue;
+
             for (int ii = -1; ii <= 1; ii++)
-                if (cells[getIndex(index * i, index * ii)] != null)
-                    objects.addAll(cells[index]);
+            {
+                tempy = y + ii;
+
+                // System.out.println("tempy: " + tempy);
+
+                if (tempy < 0 || tempy >= rows)
+                    continue;
+
+                temp = getIndex(tempx, tempy);
+
+                if (temp < 0 || temp >= cells.length)
+                    continue;
+
+                // System.out.println("temp: " + temp);
+
+                if (cells[temp] != null)
+                    objects.addAll(cells[temp]);
+            }
+        }
 
         return objects;
     }
@@ -184,12 +224,12 @@ public class ArrayGrid2D
 
     private int getIndex(final int x, final int y)
     {
-        return (int) (x * xFactor + y * yFactor);
+        return (int) Math.ceil((y * cols + x + offset) * invCellSize);
     }
 
     private int getIndex(final Vect3D p)
     {
-        return (int) (p.x * xFactor + p.y * yFactor);
+        return (int) Math.ceil((p.y * cols + p.x + offset) * invCellSize);
     }
 
     private int getIndex(final StaticObject p)
