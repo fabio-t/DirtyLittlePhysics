@@ -88,17 +88,6 @@ public abstract class Collider
         return true;
     }
 
-    public static boolean testPointBoxExclusive(final Vect3D p, final Box b)
-    {
-        final Vect3D max = b.getMaxPoint();
-        final Vect3D min = b.getMinPoint();
-
-        if (p.x > min.x && p.x < max.x && p.y > min.y && p.y < max.y && p.z > min.z && p.z < max.z)
-            return true;
-
-        return false;
-    }
-
     /**
      * Finds the closest point from the given point to the given segment, if it exists.
      * Taken from Ericson, "Real-time collision detection".

@@ -103,7 +103,7 @@ public class GraphicDemo extends JFrame
         NUM_PARTICLES = 1;
 
         map = new SimpleMap(-width / 2, width / 2, -1, 1, -height / 2, height / 2);
-        collider = new ArrayGrid2D((short) (-width / 2), (short) (width / 2), (short) -10, (short) 10, (short) 10);
+        collider = new ArrayGrid2D((short) (-width / 2), (short) (width / 2), (short) -10, (short) 10, (short) 150);
         simulator = new Simulator(map, collider);
     }
 
@@ -375,11 +375,12 @@ public class GraphicDemo extends JFrame
 
         g2d.setColor(Color.red);
 
-        final Vect3D maxExtent = b.getExtent();
+        final Vect3D maxExtent = new Vect3D(b.getExtent());
         final Vect3D newPoint = transformToGraphics(b.getCenter());
 
         final double x = newPoint.x - maxExtent.x;
         final double z = newPoint.z - maxExtent.z;
+        maxExtent.mul(2.0);
 
         if (VERBOSE)
         {

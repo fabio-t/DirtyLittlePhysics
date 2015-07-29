@@ -219,7 +219,7 @@ public class Simulator
                 System.out.println("colliding with " + collisions.size() + " objects");
                 for (final StaticObject b : collisions)
                     System.out.println(b);
-                System.exit(1);
+                // System.exit(1);
             }
 
             // the world handler gives us a Cell
@@ -272,7 +272,7 @@ public class Simulator
                 System.out.println("colliding with " + collisions.size() + " objects");
                 for (final StaticObject b : collisions)
                     System.out.println(b);
-                System.exit(1);
+                // System.exit(1);
             }
 
             vel.x += dt * acc.x;

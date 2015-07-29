@@ -18,10 +18,9 @@ package colliders;
 import java.util.ArrayList;
 import java.util.List;
 
+import utils.Vect3D;
 import collision.ICollider;
 import collision.StaticObject;
-
-import utils.Vect3D;
 
 /**
  * A ArrayGrid2D implementation that inserts 3-dimensional
@@ -115,9 +114,18 @@ public class ArrayGrid2D implements ICollider
     @Override
     public void add(final StaticObject p)
     {
+        final Vect3D extent = p.getExtent();
+
+        if (extent.x > cellSize / 2.0 || extent.y > cellSize / 2.0)
+        {
+            System.out.println("ERROR: object '%s' is bigger than a cell");
+
+            return;
+        }
+
         final int index = getIndex(p);
 
-        System.out.println("b: " + p + " -> " + index);
+        // System.out.println("b: " + p + " -> " + index);
 
         if (cells[index] == null)
             cells[index] = new ArrayList<StaticObject>();
@@ -153,7 +161,7 @@ public class ArrayGrid2D implements ICollider
     {
         final int index = getIndex(p);
 
-        System.out.println("p: " + p + " -> " + index);
+        // System.out.println("p: " + p + " -> " + index);
 
         final List<StaticObject> objects = getObjectsAround(index);
 
@@ -171,8 +179,6 @@ public class ArrayGrid2D implements ICollider
         final int x = index / rows;
         final int y = index % rows;
 
-        // System.out.println(x + " " + y);
-
         int tempx;
         int tempy;
         int temp;
@@ -183,8 +189,6 @@ public class ArrayGrid2D implements ICollider
         {
             tempx = x + i;
 
-            // System.out.println("tempx:" + tempx);
-
             if (tempx < 0 || tempx >= cols)
                 continue;
 
@@ -192,17 +196,13 @@ public class ArrayGrid2D implements ICollider
             {
                 tempy = y + ii;
 
-                // System.out.println("tempy: " + tempy);
-
                 if (tempy < 0 || tempy >= rows)
                     continue;
 
-                temp = getIndex(tempx, tempy);
+                temp = tempx * rows + tempy;
 
                 if (temp < 0 || temp >= cells.length)
                     continue;
-
-                // System.out.println("temp: " + temp);
 
                 if (cells[temp] != null)
                     objects.addAll(cells[temp]);
@@ -222,14 +222,9 @@ public class ArrayGrid2D implements ICollider
                 cell.clear();
     }
 
-    private int getIndex(final int x, final int y)
-    {
-        return (int) Math.ceil((y * cols + x + offset) * invCellSize);
-    }
-
     private int getIndex(final Vect3D p)
     {
-        return (int) Math.ceil((p.y * cols + p.x + offset) * invCellSize);
+        return (int) Math.floor((p.y * cols + p.x + offset) * invCellSize);
     }
 
     private int getIndex(final StaticObject p)
