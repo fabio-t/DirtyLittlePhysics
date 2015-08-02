@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package colliders;
+package collision.broadphase;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import utils.Vect3D;
-import collision.ICollider;
+import collision.BroadPhase;
 import collision.StaticObject;
 
 /**
  * A ArrayGrid2D implementation that inserts 3-dimensional
- * objects into 1D cells, but only using two components.
+ * objects into 1D maps.cells, but only using two components.
  * This allows for fast broad-phase collision detection.
  * 
  * @author Fabio Ticconi
  */
-public class ArrayGrid2D implements ICollider
+public class ArrayGrid2D implements BroadPhase
 {
     int                       cellSize;
     double                    invCellSize;
@@ -56,7 +56,7 @@ public class ArrayGrid2D implements ICollider
      * <br />
      * 
      * Note how the dimensions of the world are short variables.
-     * With big enough cells a short is large enough, and it doesn't
+     * With big enough maps.cells a short is large enough, and it doesn't
      * require an hash function. If you hit a limit
      * because of world size, or you want to use additional dimensions,
      * then you need to create a hash function and "module" it down
@@ -85,7 +85,7 @@ public class ArrayGrid2D implements ICollider
 
     /**
      * Add all StaticObjects in input to the respective
-     * cells.
+     * maps.cells.
      * 
      * @param Objects
      */
@@ -96,7 +96,7 @@ public class ArrayGrid2D implements ICollider
     }
 
     /**
-     * Add all StaticObjects in input to the respective cells.
+     * Add all StaticObjects in input to the respective maps.cells.
      * 
      * @param Objects
      */
@@ -118,7 +118,7 @@ public class ArrayGrid2D implements ICollider
 
         if (extent.x > cellSize / 2.0 || extent.y > cellSize / 2.0)
         {
-            System.out.println("ERROR: object '%s' is bigger than a cell");
+            System.out.format("ERROR: object '%s' is bigger than a cell", p);
 
             return;
         }
@@ -213,7 +213,7 @@ public class ArrayGrid2D implements ICollider
     }
 
     /**
-     * Removes all StaticObjects from all cells.
+     * Removes all StaticObjects from all maps.cells.
      */
     public void clearAll()
     {

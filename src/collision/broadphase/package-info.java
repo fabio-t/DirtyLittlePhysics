@@ -17,4 +17,4 @@
  * 
  * @author Fabio Ticconi
  */
-package cells;
+package collision.broadphase;

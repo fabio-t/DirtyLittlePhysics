@@ -50,6 +50,7 @@ public class Particle extends Sphere
 
     final Vect3D vel;
     final Vect3D acc;
+    final Vect3D force;
 
     public Particle()
     {
@@ -64,6 +65,7 @@ public class Particle extends Sphere
 
         vel = new Vect3D();
         acc = new Vect3D();
+        force = new Vect3D();
     }
 
     public Particle(final double mass, final double radius, final Vect3D pos, final Vect3D vel)
@@ -79,6 +81,7 @@ public class Particle extends Sphere
 
         this.vel = vel;
         acc = new Vect3D();
+        force = new Vect3D();
     }
 
     /**
@@ -150,6 +153,11 @@ public class Particle extends Sphere
         this.acc.set(acc);
     }
 
+    public void setForce(final Vect3D force)
+    {
+        this.force.set(force);
+    }
+
     /**
      * Overwrites the particle's center position.
      * It copies the values over, doesn't assign the object.
@@ -195,6 +203,11 @@ public class Particle extends Sphere
     public Vect3D getAcceleration()
     {
         return acc;
+    }
+
+    public Vect3D getForce()
+    {
+        return force;
     }
 
     @Override

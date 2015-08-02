@@ -13,19 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package collision;
-
-import java.util.List;
-
-import utils.Vect3D;
-
 /**
  * 
  * @author Fabio Ticconi
  */
-public interface ICollider
-{
-    public void add(final StaticObject p);
-
-    public List<StaticObject> getCollisions(final Vect3D p);
-}
+package maps.cells;

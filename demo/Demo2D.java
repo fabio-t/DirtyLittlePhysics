@@ -41,13 +41,13 @@ import map.Cell;
 import map.Map;
 import maps.SimpleMap;
 import utils.Vect3D;
-import colliders.ArrayGrid2D;
-import collision.ICollider;
+import collision.BroadPhase;
 import collision.StaticObject;
+import collision.broadphase.ArrayGrid2D;
 import engine.Particle;
 import engine.Simulator;
 
-public class GraphicDemo extends JFrame
+public class Demo2D extends JFrame
 {
     private static final long                         serialVersionUID = -6027400479565797010L;
 
@@ -68,11 +68,11 @@ public class GraphicDemo extends JFrame
     private final int                                 height;
 
     private final Map                                 map;
-    private final ICollider                           collider;
+    private final BroadPhase                           collider;
 
     private final int                                 NUM_PARTICLES;
 
-    public GraphicDemo(final int width, final int height, final String title)
+    public Demo2D(final int width, final int height, final String title)
     {
         super();
         setTitle(title);
@@ -177,7 +177,7 @@ public class GraphicDemo extends JFrame
 
             final StaticObject o = new StaticObject(realPos, realPos); // fake min-max
 
-            final Vect3D extent = new Vect3D(Math.random() + 0.1, 0.5, Math.random() + 0.1).mul(100);
+            final Vect3D extent = new Vect3D(Math.random() + 0.1, 0.5, Math.random() + 0.1).mul(50);
             o.setCenterExtent(realPos, extent); // will correct min-max too
 
             newObjects.add(o);
@@ -409,7 +409,7 @@ public class GraphicDemo extends JFrame
 
     public static void main(final String[] args)
     {
-        final GraphicDemo window = new GraphicDemo(1024, 768, "Particles: ");
+        final Demo2D window = new Demo2D(1024, 768, "Particles: ");
         window.pollInput();
         window.loop();
     }

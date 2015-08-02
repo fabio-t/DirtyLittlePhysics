@@ -2,11 +2,12 @@ package maps;
 
 import map.Cell;
 import map.Map;
+import maps.cells.FluidCell;
+import maps.cells.SolidCell;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
-import cells.FluidCell;
-import cells.SolidCell;
 import collision.Collider;
+import engine.Particle;
 
 /**
  * Copyright 2015 Fabio Ticconi
@@ -86,10 +87,12 @@ public class SimpleMap implements Map
     }
 
     @Override
-    public void correctPositions(final Vect3D from, final Vect3D to)
+    public void correctPosition(final Particle p)
     {
-        // makes it impossible to move outside the world
-        to.max(min).min(max);
+        // here we have a simple non-toroidal world,
+        // so if we cross the boundary, the position is
+        // simply clamped
+        p.getCenter().max(min).min(max);
     }
 
     /**

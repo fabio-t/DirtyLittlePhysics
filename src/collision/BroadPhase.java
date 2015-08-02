@@ -13,8 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package collision;
+
+import java.util.List;
+
+import utils.Vect3D;
+
 /**
  * 
  * @author Fabio Ticconi
  */
-package colliders;
+public interface BroadPhase
+{
+    public void add(final StaticObject p);
+
+    public List<StaticObject> getCollisions(final Vect3D p);
+}

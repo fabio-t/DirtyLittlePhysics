@@ -17,6 +17,7 @@ package map;
 
 import utils.ImmutableVect3D;
 import utils.Vect3D;
+import engine.Particle;
 
 /**
  * Manages all 3D terrain data, allowing the physics to retrieve
@@ -39,12 +40,10 @@ public interface Map
      * unreacheable zones, the new position is corrected as
      * conservatively as possible.
      * 
-     * @param from
+     * @param p
      *            initial position
-     * @param to
-     *            end position
      */
-    public void correctPositions(final Vect3D from, final Vect3D to);
+    public void correctPosition(final Particle p);
 
     /**
      * Returns the gravity currently set for this world.

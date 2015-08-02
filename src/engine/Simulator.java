@@ -23,7 +23,7 @@ import map.Cell;
 import map.Map;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
-import collision.ICollider;
+import collision.BroadPhase;
 import collision.StaticObject;
 
 /**
@@ -45,7 +45,7 @@ public class Simulator
 
     private Map                 world;
 
-    private ICollider           collider;
+    private BroadPhase           collider;
 
     // initial maximum number of particles, used to
     // initialise the array
@@ -54,7 +54,7 @@ public class Simulator
     int                         NUM_OF_PARTICLES;
     Particle                    particles[];
 
-    public Simulator(final Map world, final ICollider collider)
+    public Simulator(final Map world, final BroadPhase collider)
     {
         if (world == null)
             throw new IllegalArgumentException("A world must be defined!");
@@ -76,7 +76,7 @@ public class Simulator
         return this;
     }
 
-    public Simulator setStaticCollider(final ICollider collider)
+    public Simulator setStaticCollider(final BroadPhase collider)
     {
         this.collider = collider;
 
@@ -182,18 +182,20 @@ public class Simulator
         Vect3D acc;
         Vect3D force;
         Vect3D vel;
-        Vect3D oldpos;
         Vect3D newpos;
         Cell cell;
         for (int i = 0; i < NUM_OF_PARTICLES; i++)
         {
             p = particles[i];
+
             // reset the acceleration vector
             acc = p.acc.set(ImmutableVect3D.zero);
+            // reset the force vector
+            force = p.force.set(ImmutableVect3D.zero);
+
             vel = p.vel;
-            // oldpos will reference the current particle position,
-            // it's not modified but used often in what follows
-            oldpos = p.oldCenter.set(p.getCenter());
+            // we save the current position
+            p.oldCenter.set(p.getCenter());
             // newpos will be updated in the following code,
             // and thus update the actual particle position
             newpos = p.getCenter();
@@ -206,10 +208,14 @@ public class Simulator
             // newpos to be just at the border, if it was over it.
             // Conversely, if toroidal it moves the particle to the
             // right side
-            world.correctPositions(oldpos, newpos);
+            world.correctPosition(p);
 
             if (VERBOSE)
                 System.out.println("pos corrected: " + p);
+
+            // TODO: must move the below code (collisions with ground/objects,
+            // environmental forces) into an implementation of Map, so as to keep
+            // this as generic as possible
 
             collisions = collider.getCollisions(newpos);
 
@@ -259,7 +265,7 @@ public class Simulator
             if (VERBOSE)
                 System.out.println("newpos: " + newpos);
 
-            world.correctPositions(oldpos, newpos);
+            world.correctPosition(p);
 
             if (VERBOSE)
                 System.out.println("newpos corrected: " + newpos);
