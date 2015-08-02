@@ -21,20 +21,36 @@ import collision.Collider;
 /**
  * Defines a spherical shape.
  */
-public abstract class Sphere implements Shape
+public class Sphere implements Shape
 {
     protected Vect3D center;
+    protected Vect3D extent;
+
     protected double radius;
 
     public Sphere(final Vect3D center, final double radius)
     {
-        this.center = center;
+        this.center = new Vect3D(center);
+        extent = new Vect3D().add(radius);
+
         this.radius = radius;
     }
 
+    @Override
     public Vect3D getCenter()
     {
         return center;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Shape#getExtent()
+     */
+    @Override
+    public Vect3D getExtent()
+    {
+        return extent;
     }
 
     public double getRadius()
@@ -73,5 +89,16 @@ public abstract class Sphere implements Shape
     public boolean intersects(final Vect3D p)
     {
         return Collider.test(p, this);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see shapes.Shape#intersects(shapes.Shape)
+     */
+    @Override
+    public boolean intersects(final Shape s)
+    {
+        return s.intersects(this);
     }
 }

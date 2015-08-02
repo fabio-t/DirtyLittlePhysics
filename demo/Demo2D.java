@@ -38,39 +38,39 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.swing.JFrame;
 
 import map.Cell;
-import map.Map;
+import map.World;
 import maps.SimpleMap;
+import shapes.Box;
 import utils.Vect3D;
 import collision.BroadPhase;
-import collision.StaticObject;
 import collision.broadphase.ArrayGrid2D;
 import engine.Particle;
 import engine.Simulator;
 
 public class Demo2D extends JFrame
 {
-    private static final long                         serialVersionUID = -6027400479565797010L;
+    private static final long                     serialVersionUID = -6027400479565797010L;
 
-    private static boolean                            VERBOSE          = false;
+    private static boolean                        VERBOSE          = false;
 
-    private final ArrayList<Particle>                 particles        = new ArrayList<Particle>(500);
-    private final ConcurrentLinkedQueue<Particle>     newParticles     = new ConcurrentLinkedQueue<Particle>();
+    private final ArrayList<Particle>             particles        = new ArrayList<Particle>(500);
+    private final ConcurrentLinkedQueue<Particle> newParticles     = new ConcurrentLinkedQueue<Particle>();
 
-    private final ArrayList<StaticObject>             objects          = new ArrayList<StaticObject>(500);
-    private final ConcurrentLinkedQueue<StaticObject> newObjects       = new ConcurrentLinkedQueue<StaticObject>();
+    private final ArrayList<Box>                  objects          = new ArrayList<Box>(500);
+    private final ConcurrentLinkedQueue<Box>      newObjects       = new ConcurrentLinkedQueue<Box>();
 
-    private BufferStrategy                            bufferstrat      = null;
-    private final Canvas                              render;
+    private BufferStrategy                        bufferstrat      = null;
+    private final Canvas                          render;
 
-    private final Simulator                           simulator;
+    private final Simulator                       simulator;
 
-    private final int                                 width;
-    private final int                                 height;
+    private final int                             width;
+    private final int                             height;
 
-    private final Map                                 map;
-    private final BroadPhase                           collider;
+    private final World                             world;
+    private final BroadPhase                      collider;
 
-    private final int                                 NUM_PARTICLES;
+    private final int                             NUM_PARTICLES;
 
     public Demo2D(final int width, final int height, final String title)
     {
@@ -102,9 +102,9 @@ public class Demo2D extends JFrame
 
         NUM_PARTICLES = 1;
 
-        map = new SimpleMap(-width / 2, width / 2, -1, 1, -height / 2, height / 2);
+        world = new SimpleMap(-width / 2, width / 2, -1, 1, -height / 2, height / 2);
         collider = new ArrayGrid2D((short) (-width / 2), (short) (width / 2), (short) -10, (short) 10, (short) 150);
-        simulator = new Simulator(map, collider);
+        simulator = new Simulator(world, collider);
     }
 
     public Vect3D transformToSim(final Point p)
@@ -166,7 +166,7 @@ public class Demo2D extends JFrame
         }
     }
 
-    public void addStaticObject()
+    public void addBox()
     {
         final Point pos = render.getMousePosition();
 
@@ -175,7 +175,7 @@ public class Demo2D extends JFrame
         {
             final Vect3D realPos = transformToSim(pos);
 
-            final StaticObject o = new StaticObject(realPos, realPos); // fake min-max
+            final Box o = new Box(realPos, realPos); // fake min-max
 
             final Vect3D extent = new Vect3D(Math.random() + 0.1, 0.5, Math.random() + 0.1).mul(50);
             o.setCenterExtent(realPos, extent); // will correct min-max too
@@ -196,7 +196,7 @@ public class Demo2D extends JFrame
             public void mouseClicked(final MouseEvent e)
             {
                 if (e.isShiftDown())
-                    addStaticObject();
+                    addBox();
                 else
                     for (int i = 0; i < NUM_PARTICLES; i++)
                         addParticle();
@@ -232,7 +232,7 @@ public class Demo2D extends JFrame
     private void processInput()
     {
         final Particle p = newParticles.poll();
-        final StaticObject o = newObjects.poll();
+        final Box o = newObjects.poll();
 
         if (o != null)
         {
@@ -323,7 +323,7 @@ public class Demo2D extends JFrame
 
     public void renderBoxes(final Graphics2D g2d)
     {
-        for (final StaticObject b : objects)
+        for (final Box b : objects)
             renderBox(g2d, b);
     }
 
@@ -343,7 +343,7 @@ public class Demo2D extends JFrame
 
         if (VERBOSE)
         {
-            final Cell c = map.getCell(p.getCenter());
+            final Cell c = world.getCell(p.getCenter());
 
             final String celltype = c.getClass().getName();
 
@@ -369,7 +369,7 @@ public class Demo2D extends JFrame
         // g2d.dispose();
     }
 
-    public void renderBox(final Graphics2D g, final StaticObject b)
+    public void renderBox(final Graphics2D g, final Box b)
     {
         final Graphics2D g2d = (Graphics2D) g.create();
 
@@ -384,7 +384,7 @@ public class Demo2D extends JFrame
 
         if (VERBOSE)
         {
-            final Cell c = map.getCell(b.getCenter());
+            final Cell c = world.getCell(b.getCenter());
 
             final String celltype = c.getClass().getName();
 

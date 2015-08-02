@@ -25,6 +25,10 @@ public interface Shape
 {
     public Vect3D getCenter();
 
+    public Vect3D getExtent();
+
+    public boolean intersects(Shape s);
+
     public boolean intersects(Box b);
 
     public boolean intersects(Sphere s);

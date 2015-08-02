@@ -25,7 +25,7 @@ import engine.Particle;
  * 
  * @author Fabio Ticconi
  */
-public interface Map
+public interface World
 {
     /**
      * Returns the Cell object including the given Vect3D.

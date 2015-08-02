@@ -1,7 +1,7 @@
 package maps;
 
 import map.Cell;
-import map.Map;
+import map.World;
 import maps.cells.FluidCell;
 import maps.cells.SolidCell;
 import utils.ImmutableVect3D;
@@ -33,7 +33,7 @@ import engine.Particle;
  * 
  * @author Fabio Ticconi
  */
-public class SimpleMap implements Map
+public class SimpleMap implements World
 {
     private static final FluidCell water  = new FluidCell(FluidCell.WATER_DENSITY);
     private static final FluidCell air    = new FluidCell(FluidCell.AIR_DENSITY);

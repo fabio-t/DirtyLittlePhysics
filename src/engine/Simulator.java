@@ -20,11 +20,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import map.Cell;
-import map.Map;
+import map.World;
+import shapes.Shape;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
 import collision.BroadPhase;
-import collision.StaticObject;
 
 /**
  * Entry Vect3D for the engine. Simulates the movement of all
@@ -43,9 +43,9 @@ public class Simulator
 {
     public static final boolean VERBOSE       = false;
 
-    private Map                 world;
+    private World               world;
 
-    private BroadPhase           collider;
+    private BroadPhase          collider;
 
     // initial maximum number of particles, used to
     // initialise the array
@@ -54,7 +54,7 @@ public class Simulator
     int                         NUM_OF_PARTICLES;
     Particle                    particles[];
 
-    public Simulator(final Map world, final BroadPhase collider)
+    public Simulator(final World world, final BroadPhase collider)
     {
         if (world == null)
             throw new IllegalArgumentException("A world must be defined!");
@@ -69,9 +69,9 @@ public class Simulator
         NUM_OF_PARTICLES = 0;
     }
 
-    public Simulator setMap(final Map map)
+    public Simulator setMap(final World world)
     {
-        world = map;
+        this.world = world;
 
         return this;
     }
@@ -176,7 +176,7 @@ public class Simulator
         // a few divisions
         final double dt2 = dt / 2.0;
 
-        List<StaticObject> collisions;
+        List<Shape> collisions;
 
         Particle p;
         Vect3D acc;
@@ -214,7 +214,7 @@ public class Simulator
                 System.out.println("pos corrected: " + p);
 
             // TODO: must move the below code (collisions with ground/objects,
-            // environmental forces) into an implementation of Map, so as to keep
+            // environmental forces) into an implementation of World, so as to keep
             // this as generic as possible
 
             collisions = collider.getCollisions(newpos);
@@ -223,8 +223,8 @@ public class Simulator
             {
                 System.out.println(p);
                 System.out.println("colliding with " + collisions.size() + " objects");
-                for (final StaticObject b : collisions)
-                    System.out.println(b);
+                for (final Shape obj : collisions)
+                    System.out.println(obj);
                 // System.exit(1);
             }
 
@@ -276,8 +276,8 @@ public class Simulator
             {
                 System.out.println(p);
                 System.out.println("colliding with " + collisions.size() + " objects");
-                for (final StaticObject b : collisions)
-                    System.out.println(b);
+                for (final Shape obj : collisions)
+                    System.out.println(obj);
                 // System.exit(1);
             }
 

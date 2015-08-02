@@ -1,4 +1,4 @@
-import map.Map;
+import map.World;
 import maps.SimpleMap;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
@@ -93,10 +93,10 @@ public class TextSimulation
         x_min = y_min = z_min = -1000;
         x_max = y_max = z_max = 1000;
 
-        final Map map = new SimpleMap(x_min, x_max, y_min, y_max, z_min, z_max);
+        final World world = new SimpleMap(x_min, x_max, y_min, y_max, z_min, z_max);
         final BroadPhase collider = new ArrayGrid2D((short) x_min, (short) x_max, (short) y_min, (short) y_max,
                                                    (short) 10);
-        final Simulator simulator = new Simulator(map, collider);
+        final Simulator simulator = new Simulator(world, collider);
 
         System.out.println("Creating world..");
 

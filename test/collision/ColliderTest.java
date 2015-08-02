@@ -24,9 +24,9 @@ public class ColliderTest
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
     {
-        b1 = new StaticObject(new Vect3D(112.0, -50.0, -26.0), new Vect3D(267.0, 50.0, 88.0));
-        b2 = new StaticObject(new Vect3D(200.0, 0.0, 51.0), new Vect3D(500.0, 1000.0, 250.0));
-        b3 = new StaticObject(new Vect3D(600.0, 1300.0, 600.0), new Vect3D(1000.0, 2000.0, 900.0));
+        b1 = new Box(new Vect3D(112.0, -50.0, -26.0), new Vect3D(267.0, 50.0, 88.0));
+        b2 = new Box(new Vect3D(200.0, 0.0, 51.0), new Vect3D(500.0, 1000.0, 250.0));
+        b3 = new Box(new Vect3D(600.0, 1300.0, 600.0), new Vect3D(1000.0, 2000.0, 900.0));
 
         p1 = new Vect3D(50.0, 100.0, 200.0);
         p2 = new Vect3D(170.0, -10.0, 48.0);

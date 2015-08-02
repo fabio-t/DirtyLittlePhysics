@@ -17,15 +17,21 @@ package collision;
 
 import java.util.List;
 
+import shapes.Shape;
 import utils.Vect3D;
 
 /**
+ * Interface to a broad phase collision system.
+ * Concrete classes should aim to provide as fast as possible
+ * implementations of these methods.
  * 
  * @author Fabio Ticconi
  */
 public interface BroadPhase
 {
-    public void add(final StaticObject p);
+    public void add(final Shape p);
 
-    public List<StaticObject> getCollisions(final Vect3D p);
+    public List<Shape> getPossibleCollisions(final Vect3D p);
+
+    public List<Shape> getCollisions(final Vect3D p);
 }

@@ -18,9 +18,9 @@ package collision.broadphase;
 import java.util.ArrayList;
 import java.util.List;
 
+import shapes.Shape;
 import utils.Vect3D;
 import collision.BroadPhase;
-import collision.StaticObject;
 
 /**
  * A ArrayGrid2D implementation that inserts 3-dimensional
@@ -31,15 +31,15 @@ import collision.StaticObject;
  */
 public class ArrayGrid2D implements BroadPhase
 {
-    int                       cellSize;
-    double                    invCellSize;
+    int                cellSize;
+    double             invCellSize;
 
-    int                       rows;
-    int                       cols;
+    int                rows;
+    int                cols;
 
-    int                       offset;
+    int                offset;
 
-    ArrayList<StaticObject>[] cells;
+    ArrayList<Shape>[] cells;
 
     /**
      * Creates a new Grid World with the given dimensions
@@ -84,35 +84,35 @@ public class ArrayGrid2D implements BroadPhase
     }
 
     /**
-     * Add all StaticObjects in input to the respective
+     * Add all Shapes in input to the respective
      * maps.cells.
      * 
      * @param Objects
      */
-    public void addAll(final StaticObject... Objects)
+    public void addAll(final Shape... Objects)
     {
         for (int i = 0; i < Objects.length; i++)
             add(Objects[i]);
     }
 
     /**
-     * Add all StaticObjects in input to the respective maps.cells.
+     * Add all Shapes in input to the respective maps.cells.
      * 
      * @param Objects
      */
-    public void addAll(final List<StaticObject> Objects)
+    public void addAll(final List<Shape> Objects)
     {
-        for (final StaticObject p : Objects)
+        for (final Shape p : Objects)
             add(p);
     }
 
     /**
-     * Add a single StaticObject to its cell.
+     * Add a single Shape to its cell.
      * 
      * @param p
      */
     @Override
-    public void add(final StaticObject p)
+    public void add(final Shape p)
     {
         final Vect3D extent = p.getExtent();
 
@@ -128,53 +128,68 @@ public class ArrayGrid2D implements BroadPhase
         // System.out.println("b: " + p + " -> " + index);
 
         if (cells[index] == null)
-            cells[index] = new ArrayList<StaticObject>();
-
-        // FIXME: should we check that the box is not bigger than a cell?
+            cells[index] = new ArrayList<Shape>();
 
         cells[index].add(p);
     }
 
     /**
-     * Returns all StaticObjects overlapping with
+     * Returns all Shapes overlapping with
      * the given object.
      * 
      * @param p
      */
-    public List<StaticObject> getCollisions(final StaticObject p)
+    public List<Shape> getCollisions(final Shape b)
     {
-        final int index = getIndex(p);
+        final int index = getIndex(b);
 
-        final List<StaticObject> objects = getObjectsAround(index);
+        final List<Shape> objects = getObjectsAround(index);
 
-        final ArrayList<StaticObject> collidingObjects = new ArrayList<StaticObject>(objects.size());
+        final ArrayList<Shape> collidingObjects = new ArrayList<Shape>(objects.size());
 
-        for (final StaticObject p2 : objects)
-            if (p2.intersects(p))
-                collidingObjects.add(p2);
+        for (final Shape obj : objects)
+            if (obj.intersects(b))
+                collidingObjects.add(obj);
 
         return collidingObjects;
     }
 
     @Override
-    public List<StaticObject> getCollisions(final Vect3D p)
+    public List<Shape> getCollisions(final Vect3D p)
     {
         final int index = getIndex(p);
 
         // System.out.println("p: " + p + " -> " + index);
 
-        final List<StaticObject> objects = getObjectsAround(index);
+        final List<Shape> objects = getObjectsAround(index);
 
-        final ArrayList<StaticObject> collidingObjects = new ArrayList<StaticObject>(objects.size());
+        final ArrayList<Shape> collidingObjects = new ArrayList<Shape>(objects.size());
 
-        for (final StaticObject p2 : objects)
-            if (p2.intersects(p))
-                collidingObjects.add(p2);
+        for (final Shape obj : objects)
+            if (obj.intersects(p))
+                collidingObjects.add(obj);
 
         return collidingObjects;
     }
 
-    public List<StaticObject> getObjectsAround(final int index)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see collision.BroadPhase#getPossibleCollisions(utils.Vect3D)
+     */
+    @Override
+    public List<Shape> getPossibleCollisions(final Vect3D p)
+    {
+        final int index = getIndex(p);
+
+        // System.out.println("p: " + p + " -> " + index);
+
+        final List<Shape> objects = getObjectsAround(index);
+
+        return objects;
+    }
+
+    public List<Shape> getObjectsAround(final int index)
     {
         final int x = index / rows;
         final int y = index % rows;
@@ -183,7 +198,7 @@ public class ArrayGrid2D implements BroadPhase
         int tempy;
         int temp;
 
-        final ArrayList<StaticObject> objects = new ArrayList<StaticObject>();
+        final ArrayList<Shape> objects = new ArrayList<Shape>();
 
         for (int i = -1; i <= 1; i++)
         {
@@ -213,11 +228,11 @@ public class ArrayGrid2D implements BroadPhase
     }
 
     /**
-     * Removes all StaticObjects from all maps.cells.
+     * Removes all stored objects.
      */
     public void clearAll()
     {
-        for (final ArrayList<StaticObject> cell : cells)
+        for (final ArrayList<Shape> cell : cells)
             if (cell != null)
                 cell.clear();
     }
@@ -227,10 +242,8 @@ public class ArrayGrid2D implements BroadPhase
         return (int) Math.floor((p.y * cols + p.x + offset) * invCellSize);
     }
 
-    private int getIndex(final StaticObject p)
+    private int getIndex(final Shape s)
     {
-        final Vect3D c = p.getCenter();
-
-        return getIndex(c);
+        return getIndex(s.getCenter());
     }
 }
