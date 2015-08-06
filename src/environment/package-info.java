@@ -17,4 +17,4 @@
  * 
  * @author Fabio Ticconi
  */
-package map;
+package environment;

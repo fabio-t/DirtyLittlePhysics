@@ -15,7 +15,7 @@
  */
 package maps.cells;
 
-import map.Cell;
+import maps.Cell;
 import shapes.Box;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
@@ -74,24 +74,12 @@ public class FluidCell extends Box implements Cell
      * Reference: {@link http://lorien.ncl.ac.uk/ming/particle/cpe124p2.html}
      * 
      * 
-     * @see map.Cell#getBuoyancy(engine.Particle)
+     * @see maps.Cell#getBuoyancy(engine.Particle)
      */
     @Override
     public double getBuoyancy(final Particle p)
     {
         // return ((p.getDensity() - density) / p.getDensity());
         return 1.0 - (density / p.getDensity());
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Shape#getCenter()
-     */
-    @Override
-    public Vect3D getCenter()
-    {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

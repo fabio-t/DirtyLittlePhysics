@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package map;
+package maps;
 
 import utils.Vect3D;
 import engine.Particle;

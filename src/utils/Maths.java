@@ -52,4 +52,22 @@ public class Maths
     {
         return new Vect3D(velocity).mul(-6.0 * Math.PI * radius * viscosity);
     }
+
+    /**
+     * http://chrishecker.com/images/e/e7/Gdmphys3.pdf
+     * 
+     * @param velocity
+     * @param normal
+     * @param bounciness
+     * @param mass
+     * 
+     * @return force in the direction of the contact normal
+     */
+    public static Vect3D contactForce(final Vect3D velocity,
+                                      final Vect3D normal,
+                                      final double bounciness,
+                                      final double mass)
+    {
+        return new Vect3D(normal).mul(Vect3D.dot(normal, velocity) * -(1.0 + bounciness) * mass);
+    }
 }

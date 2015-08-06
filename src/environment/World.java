@@ -13,37 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package map;
+package environment;
 
 import utils.ImmutableVect3D;
-import utils.Vect3D;
 import engine.Particle;
 
 /**
- * Manages all 3D terrain data, allowing the physics to retrieve
- * Cell types.
+ * Interface to the "environment".
+ * Concrete classes should implement all influences of
+ * their environment on the Particle, for example by
+ * accumulating environmental forces (gravity, buoyancy etc).
  * 
  * @author Fabio Ticconi
  */
 public interface World
 {
     /**
-     * Returns the Cell object including the given Vect3D.
+     * Applies environmental forces and corrects the position
+     * (as conservatively as possible).
      * 
      * @param p
-     *            a {@link Vect3D} to get the Cell of
+     * @param dt
      */
-    public Cell getCell(Vect3D p);
-
-    /**
-     * If we are trying to move outside the world or within
-     * unreacheable zones, the new position is corrected as
-     * conservatively as possible.
-     * 
-     * @param p
-     *            initial position
-     */
-    public void correctPosition(final Particle p);
+    public void process(final Particle p, final double dt);
 
     /**
      * Returns the gravity currently set for this world.
@@ -56,7 +48,7 @@ public interface World
      * Sets the gravity as an <b>acceleration</b>
      * vector.<br />
      * Example: for Earth, the vector would be (0, 0, -9.81).
-     * Incidentally, this is also the default value is
+     * Incidentally, this is also the default value if
      * this method is not called.
      * 
      * @param gravity

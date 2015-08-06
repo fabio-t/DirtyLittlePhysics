@@ -1,13 +1,12 @@
 package maps;
 
-import map.Cell;
-import map.World;
 import maps.cells.FluidCell;
 import maps.cells.SolidCell;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
 import collision.Collider;
 import engine.Particle;
+import environment.World;
 
 /**
  * Copyright 2015 Fabio Ticconi
@@ -26,10 +25,10 @@ import engine.Particle;
  */
 
 /**
- * For the purpose of testing, the simplest map is hard-coded
+ * For the purpose of testing, the simplest environment is hard-coded
  * so that both ground and fluids can be used.
  * Cells are inherently flyweight: only three Cell objects are instantiated,
- * for any map size.
+ * for any environment size.
  * 
  * @author Fabio Ticconi
  */
@@ -74,7 +73,6 @@ public class SimpleMap implements World
         gravity = new ImmutableVect3D(0d, 0d, -9.81d);
     }
 
-    @Override
     public Cell getCell(final Vect3D p)
     {
         if (Collider.test(p, air))
@@ -84,15 +82,6 @@ public class SimpleMap implements World
             return water;
 
         return ground;
-    }
-
-    @Override
-    public void correctPosition(final Particle p)
-    {
-        // here we have a simple non-toroidal world,
-        // so if we cross the boundary, the position is
-        // simply clamped
-        p.getCenter().max(min).min(max);
     }
 
     /**
@@ -121,5 +110,38 @@ public class SimpleMap implements World
     public ImmutableVect3D getGravity()
     {
         return gravity;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see environment.World#process(engine.Particle, double)
+     */
+    @Override
+    public void process(final Particle p, final double dt)
+    {
+        final Vect3D center = p.getCenter();
+        final Vect3D force = p.getForce();
+
+        // here we have a simple non-toroidal world,
+        // so if we cross the boundary, the position is
+        // simply clamped
+        center.max(min).min(max);
+
+        // the world handler gives us a Cell
+        // using the current player position
+        final Cell cell = getCell(center);
+
+        // gravity must be corrected by the buoyancy (if the cell has one).
+        // Note: normally this would only make sense for the "z" dimension,
+        // but who are we to limit your creativity?
+        final double buoyancy = cell.getBuoyancy(p);
+        final Vect3D gForce = new Vect3D(gravity).mul(buoyancy * p.getMass());
+
+        // many kind of environmental force
+        // could be applied to the particle,
+        // for example fluid drag, friction,
+        // impact forces
+        force.add(cell.getForces(p, dt)).add(gForce);
     }
 }

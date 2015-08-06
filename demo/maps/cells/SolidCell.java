@@ -15,9 +15,10 @@
  */
 package maps.cells;
 
-import map.Cell;
+import maps.Cell;
 import shapes.Box;
 import utils.ImmutableVect3D;
+import utils.Maths;
 import utils.Vect3D;
 import collision.Collider;
 import engine.Particle;
@@ -80,69 +81,16 @@ public class SolidCell extends Box implements Cell
                 return new Vect3D(ImmutableVect3D.zero);
             }
 
-            // reflect the velocity vector symmetrically
-            // to the normal, then scale it down with the bounciness
-            final Vect3D vel = p.getVelocity();
-            final Vect3D n = new Vect3D(normal);
-
-            // COLLISION RESPONSE METHODS //
+            // generate a sort of "impulse vector", but a force, not a velocity
+            final Vect3D contactForce = Maths.contactForce(p.getVelocity(), normal, p.getBounciness(), p.getMass());
 
             // ########################################
-            // 1) penalty-based (spring damper)
-            // ########################################
-            // model. K is based on experimentally found results
-            // of ball-bat reactions. They found that the coefficient of
-            // restitution is proportional to that stifness value.
-            // http://baseball.physics.illinois.edu/CORNormalization.pdf for
-            // the e-K linear relationship (although it's not the same
-            // coefficient of restitution as ours..),
-            // https://repositorium.sdum.uminho.pt/bitstream/1822/8883/1/ARI-05-2006.pdf
-            // and http://www2.msm.ctw.utwente.nl/sluding/PAPERS/luding_alert2008.pdf
-            // and http://arxiv.org/pdf/physics/0601168.pdf
-            // for deriving the actual force based on K/e (ie,
-            // that it needs to be multiplied by mass and by the
-            // penetration length
-            // NOTE: this consider the penetration length equal to the space
-            // the particle WOULD HAVE traveled inside the ground
-            // this is not technically correct but a good approximation for now.
-            // Also, most paper use this:
-            // F = K*delta + damping*v
-            // but we don't need damping here, because it's naturally applied
-            // in the simulator in form of drag, gravity and buoyancy.
-            // n.mul(Vect3D.sub(isec, pos).length() * p.getBounciness() * 300 * p.getMass());
-            // n.add(Vect3D.mul(normal, Vect3D.dot(normal, vel)));
-            // n.div(dt);
-
-            // ########################################
-            // 2) impulse-based collision resolution
-            // ########################################
-            // taken from: http://chrishecker.com/images/e/e7/Gdmphys3.pdf
-            // and various other sources.
-            final double j = (Vect3D.dot(normal, vel) * -(1.0 + p.getBounciness())) / p.getInvMass();
-            n.mul(j); // impulse vector
-
-            // ########################################
-            // 2.a) add force (will generate impuse in simulator)
+            // add force (will generate "impuse" in simulator)
             // ########################################
             // the impulse vector is divided
             // by the delta t (ie, the force is applied during the
             // whole simulated time step)
-            // NOTE: this doesn't seem to work well,
-            // it seems like j is too small
-            n.div(dt); // apply force for the whole time step
-
-            // ########################################
-            // 2.b) change velocity
-            // ########################################
-            // the old velocity is added to the impulse vector
-            // divided by the mass.
-            // we are in fact calculating a new acceleration
-            // in-line here
-            // NOTE: this works well, but changing the velocity at this point
-            // is very hacky
-            // vel.add(n.mul(p.getInvMass()));
-
-            // COLLISION RESPONSE METHODS END //
+            contactForce.div(dt); // apply force for the whole time step
 
             // move the particle to a point very close to
             // to the intersection point, but outside the box.
@@ -156,20 +104,19 @@ public class SolidCell extends Box implements Cell
             // and opposite to movement, convert them to the force that generated
             // them. Now to completely stop movement we could just use ud=1, but
             // generally we want a lower dynamic friction constant
-            final Vect3D fForce = new Vect3D(hplane).mul(vel).invert().mul(ud * p.getMass() / dt);
+            final Vect3D frictionForce = new Vect3D(hplane).mul(p.getVelocity()).invert().mul(ud * p.getMass() / dt);
 
             if (Simulator.VERBOSE)
             {
                 System.out.println("\n#solidcell#");
-                System.out.format("j: %f\n", j);
-                System.out.format("vel: %s\n", vel);
-                System.out.format("contact force: %s\n", n);
-                System.out.format("friction force: %s\n", fForce);
+                System.out.format("vel: %s\n", p.getVelocity());
+                System.out.format("contact force: %s\n", contactForce);
+                System.out.format("friction force: %s\n", frictionForce);
                 System.out.format("pos: %s\n", pos);
                 System.out.println();
             }
 
-            return n.add(fForce);
+            return contactForce.add(frictionForce);
         }
 
         return new Vect3D(ImmutableVect3D.zero);
@@ -178,23 +125,11 @@ public class SolidCell extends Box implements Cell
     /*
      * (non-Javadoc)
      * 
-     * @see map.Cell#getBuoyancy(engine.Particle)
+     * @see environment.Cell#getBuoyancy(engine.Particle)
      */
     @Override
     public double getBuoyancy(final Particle p)
     {
         return 1.0;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see shapes.Shape#getCenter()
-     */
-    @Override
-    public Vect3D getCenter()
-    {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

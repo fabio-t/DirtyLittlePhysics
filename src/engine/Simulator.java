@@ -19,23 +19,20 @@ package engine;
 import java.util.Arrays;
 import java.util.List;
 
-import map.Cell;
-import map.World;
+import shapes.Box;
 import shapes.Shape;
 import utils.ImmutableVect3D;
+import utils.Maths;
 import utils.Vect3D;
 import collision.BroadPhase;
+import collision.Collider;
+import environment.World;
 
 /**
  * Entry Vect3D for the engine. Simulates the movement of all
  * added particles by taking into consideration the properties of the
  * cell they are into. It uses Verlet Integration for fast and accurate simulation
  * of even velocity-dependent forces (like drag).
- * 
- * <br />
- * <br />
- * 
- * <b>This class is NOT Thread-safe.</b>
  * 
  * @author Fabio Ticconi
  */
@@ -69,14 +66,14 @@ public class Simulator
         NUM_OF_PARTICLES = 0;
     }
 
-    public Simulator setMap(final World world)
+    public Simulator setWorld(final World world)
     {
         this.world = world;
 
         return this;
     }
 
-    public Simulator setStaticCollider(final BroadPhase collider)
+    public Simulator setCollider(final BroadPhase collider)
     {
         this.collider = collider;
 
@@ -150,7 +147,7 @@ public class Simulator
     /**
      * <p>
      * Verlet Velocity integration method, slightly modified to take into account forces dependent on velocity (eg,
-     * fluid dragCoefficient). Reference (particle physics paper):
+     * fluid drag). Reference (particle physics paper):
      * http://pages.csam.montclair.edu/~yecko/ferro/papers/FerroDPD/GrootWarren_ReviewDPD_97.pdf
      * </p>
      * 
@@ -168,22 +165,21 @@ public class Simulator
         // TODO: if particles will begin interacting with each other (attractors for example), this will need some
         // modifications (updating all positions before recalculating new accelerations?)
 
-        final ImmutableVect3D gravity = world.getGravity();
-        final Vect3D netGravity = new Vect3D();
-        double buoyancy;
-
         // halve the delta t, to save
         // a few divisions
         final double dt2 = dt / 2.0;
 
         List<Shape> collisions;
+        final Vect3D isec = new Vect3D();
+        final Vect3D normal = new Vect3D();
+        final Vect3D direction = new Vect3D();
 
         Particle p;
         Vect3D acc;
         Vect3D force;
         Vect3D vel;
+        Vect3D oldpos;
         Vect3D newpos;
-        Cell cell;
         for (int i = 0; i < NUM_OF_PARTICLES; i++)
         {
             p = particles[i];
@@ -195,7 +191,7 @@ public class Simulator
 
             vel = p.vel;
             // we save the current position
-            p.oldCenter.set(p.getCenter());
+            oldpos = p.oldCenter.set(p.getCenter());
             // newpos will be updated in the following code,
             // and thus update the actual particle position
             newpos = p.getCenter();
@@ -208,14 +204,10 @@ public class Simulator
             // newpos to be just at the border, if it was over it.
             // Conversely, if toroidal it moves the particle to the
             // right side
-            world.correctPosition(p);
+            world.process(p, dt2);
 
             if (VERBOSE)
-                System.out.println("pos corrected: " + p);
-
-            // TODO: must move the below code (collisions with ground/objects,
-            // environmental forces) into an implementation of World, so as to keep
-            // this as generic as possible
+                System.out.println("processed: " + p);
 
             collisions = collider.getCollisions(newpos);
 
@@ -224,36 +216,24 @@ public class Simulator
                 System.out.println(p);
                 System.out.println("colliding with " + collisions.size() + " objects");
                 for (final Shape obj : collisions)
-                    System.out.println(obj);
-                // System.exit(1);
+                {
+                    direction.set(vel).normalise();
+
+                    Collider.intersectRayBox(oldpos, direction, (Box) obj, isec, normal);
+
+                    // generate a sort of "impulse vector", but a force, not a velocity
+                    force.add(Maths.contactForce(vel, normal, p.bounciness, p.mass).div(dt2));
+
+                    newpos.set(isec.add(normal.mul(0.01)));
+
+                    force.add(new Vect3D(1.0, 1.0, 0.0).mul(vel).invert().mul(0.4 * p.mass / dt2));
+                }
             }
 
-            // the world handler gives us a Cell
-            // using the current player position
-            cell = world.getCell(newpos);
-            // gravity must be corrected by the buoyancy (if the cell has one).
-            // Note: normally this would only make sense for the "z" dimension,
-            // but who are we to limit your creativity?
-            buoyancy = cell.getBuoyancy(p);
-            netGravity.set(gravity).mul(buoyancy);
-            // many kind of environmental force
-            // could be applied to the particle,
-            // for example fluid drag, friction,
-            // impact forces
-            force = cell.getForces(p, dt2);
-
-            if (VERBOSE)
-                System.out.println("force: " + force);
-
-            // calculate acceleration from the accumulated
-            // forces.
-            // as the gravitational force is equal to m*g,
-            // we can add it after the cumulative force has been
-            // converted to acceleration - we store it
-            // as "g", so we don't have to multiply by invmass here
-            acc.x = (force.x * p.invmass) + netGravity.x;
-            acc.y = (force.y * p.invmass) + netGravity.y;
-            acc.z = (force.z * p.invmass) + netGravity.z;
+            // calculate acceleration from the accumulated forces
+            acc.x = (force.x * p.invmass);
+            acc.y = (force.y * p.invmass);
+            acc.z = (force.z * p.invmass);
 
             if (VERBOSE)
                 System.out.println("acc: " + acc);
@@ -265,10 +245,9 @@ public class Simulator
             if (VERBOSE)
                 System.out.println("newpos: " + newpos);
 
-            world.correctPosition(p);
+            force.set(ImmutableVect3D.zero);
 
-            if (VERBOSE)
-                System.out.println("newpos corrected: " + newpos);
+            world.process(p, dt);
 
             collisions = collider.getCollisions(newpos);
 
@@ -277,9 +256,22 @@ public class Simulator
                 System.out.println(p);
                 System.out.println("colliding with " + collisions.size() + " objects");
                 for (final Shape obj : collisions)
-                    System.out.println(obj);
-                // System.exit(1);
+                {
+                    direction.set(vel).normalise();
+
+                    Collider.intersectRayBox(oldpos, direction, (Box) obj, isec, normal);
+
+                    // generate a sort of "impulse vector", but a force, not a velocity
+                    force.add(Maths.contactForce(vel, normal, p.bounciness, p.mass).div(dt));
+
+                    newpos.set(isec.add(normal.mul(0.01)));
+
+                    force.add(new Vect3D(1.0, 1.0, 0.0).mul(vel).invert().mul(0.4 * p.mass / dt));
+                }
             }
+
+            if (VERBOSE)
+                System.out.println("processed: " + newpos);
 
             vel.x += dt * acc.x;
             vel.y += dt * acc.y;
@@ -288,14 +280,9 @@ public class Simulator
             if (VERBOSE)
                 System.out.println("vel: " + vel);
 
-            cell = world.getCell(newpos);
-            buoyancy = cell.getBuoyancy(p);
-            netGravity.set(gravity).mul(buoyancy);
-            force = cell.getForces(p, dt);
-
-            acc.x = -acc.x + (force.x * p.invmass) + netGravity.x;
-            acc.y = -acc.y + (force.y * p.invmass) + netGravity.y;
-            acc.z = -acc.z + (force.z * p.invmass) + netGravity.z;
+            acc.x = -acc.x + (force.x * p.invmass);
+            acc.y = -acc.y + (force.y * p.invmass);
+            acc.z = -acc.z + (force.z * p.invmass);
 
             if (VERBOSE)
                 System.out.println("acc: " + acc);

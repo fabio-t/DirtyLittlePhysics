@@ -37,8 +37,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.swing.JFrame;
 
-import map.Cell;
-import map.World;
+import maps.Cell;
 import maps.SimpleMap;
 import shapes.Box;
 import utils.Vect3D;
@@ -67,7 +66,7 @@ public class Demo2D extends JFrame
     private final int                             width;
     private final int                             height;
 
-    private final World                             world;
+    private final SimpleMap                       world;
     private final BroadPhase                      collider;
 
     private final int                             NUM_PARTICLES;
@@ -152,9 +151,9 @@ public class Demo2D extends JFrame
             p.setRadius(Math.random() / 5.0 + 0.1);
             p.setMass(Math.random() * 20.0 + 50.0);
             p.setBounciness(Math.random() * 2.0);
-            // p.setMass(70.0);
+            // p.setMass(100.0);
             // p.setRadius(0.25);
-            // p.setBounciness(0.5);
+            // p.setBounciness(1.0);
 
             p.setCenter(realPos);
             // p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));

@@ -1,4 +1,3 @@
-import map.World;
 import maps.SimpleMap;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
@@ -6,6 +5,7 @@ import collision.BroadPhase;
 import collision.broadphase.ArrayGrid2D;
 import engine.Particle;
 import engine.Simulator;
+import environment.World;
 
 /**
  * Copyright 2015 Fabio Ticconi
