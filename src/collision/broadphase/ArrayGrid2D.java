@@ -42,7 +42,7 @@ public class ArrayGrid2D implements BroadPhase
     ArrayList<Shape>[] cells;
 
     /**
-     * Creates a new Grid World with the given dimensions
+     * Creates a grid with the given dimensions
      * and cell size. The objects will be partitioned
      * in the respective cell using their own positions.
      * For simplicity, only two of the three dimensions
@@ -56,7 +56,7 @@ public class ArrayGrid2D implements BroadPhase
      * <br />
      * 
      * Note how the dimensions of the world are short variables.
-     * With big enough maps.cells a short is large enough, and it doesn't
+     * With big enough cells a short is large enough, and it doesn't
      * require an hash function. If you hit a limit
      * because of world size, or you want to use additional dimensions,
      * then you need to create a hash function and "module" it down
@@ -112,25 +112,41 @@ public class ArrayGrid2D implements BroadPhase
      * @param p
      */
     @Override
-    public void add(final Shape p)
+    public void add(final Shape s)
     {
-        final Vect3D extent = p.getExtent();
+        final Vect3D extent = s.getExtent();
 
         if (extent.x > cellSize / 2.0 || extent.y > cellSize / 2.0)
         {
-            System.out.format("ERROR: object '%s' is bigger than a cell", p);
+            System.out.format("ERROR: object '%s' is bigger than a cell", s);
 
             return;
         }
 
-        final int index = getIndex(p);
+        final int index = getIndex(s);
 
-        // System.out.println("b: " + p + " -> " + index);
+        // System.out.println("s: " + s + " -> " + index);
 
         if (cells[index] == null)
             cells[index] = new ArrayList<Shape>();
 
-        cells[index].add(p);
+        cells[index].add(s);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see collision.BroadPhase#remove(shapes.Shape)
+     */
+    @Override
+    public void remove(final Shape s)
+    {
+        final int index = getIndex(s);
+
+        if (cells[index] == null)
+            return;
+
+        cells[index].remove(s);
     }
 
     /**

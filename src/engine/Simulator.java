@@ -169,17 +169,12 @@ public class Simulator
         // a few divisions
         final double dt2 = dt / 2.0;
 
-        List<Shape> collisions;
-        final Vect3D isec = new Vect3D();
-        final Vect3D normal = new Vect3D();
-        final Vect3D direction = new Vect3D();
-
         Particle p;
         Vect3D acc;
         Vect3D force;
         Vect3D vel;
-        Vect3D oldpos;
-        Vect3D newpos;
+        final Vect3D oldpos = new Vect3D();
+        Vect3D pos;
         for (int i = 0; i < NUM_OF_PARTICLES; i++)
         {
             p = particles[i];
@@ -190,15 +185,24 @@ public class Simulator
             force = p.force.set(ImmutableVect3D.zero);
 
             vel = p.vel;
-            // we save the current position
-            oldpos = p.oldCenter.set(p.getCenter());
+
             // newpos will be updated in the following code,
             // and thus update the actual particle position
-            newpos = p.getCenter();
+            pos = p.getCenter();
+            // save current position
+            oldpos.set(pos);
 
             if (VERBOSE)
                 System.out.println("\n#simulator#\npre: " + p);
 
+            // Preliminaries:
+            // as static objects and particles could be added
+            // at any point during the simulation, we need to immediately
+            // (before anything changes) apply basic corrections to the position
+            // (for example, warp the particle in the right place if the world is toroidal,
+            // or block it in place in case it has been added right inside a static object).
+
+            // world corrections:
             // applies space-dependent correction of position.
             // for example, if the world is non-toroidal it clamps
             // newpos to be just at the border, if it was over it.
@@ -206,29 +210,13 @@ public class Simulator
             // right side
             world.process(p, dt2);
 
+            // collision resolution:
+            // apply impact forces and position correction in case the particle
+            // is colliding with static objects
+            resolveCollisions(p, dt2);
+
             if (VERBOSE)
                 System.out.println("processed: " + p);
-
-            collisions = collider.getCollisions(newpos);
-
-            if (collisions.size() > 0)
-            {
-                System.out.println(p);
-                System.out.println("colliding with " + collisions.size() + " objects");
-                for (final Shape obj : collisions)
-                {
-                    direction.set(vel).normalise();
-
-                    Collider.intersectRayBox(oldpos, direction, (Box) obj, isec, normal);
-
-                    // generate a sort of "impulse vector", but a force, not a velocity
-                    force.add(Maths.contactForce(vel, normal, p.bounciness, p.mass).div(dt2));
-
-                    newpos.set(isec.add(normal.mul(0.01)));
-
-                    force.add(new Vect3D(1.0, 1.0, 0.0).mul(vel).invert().mul(0.4 * p.mass / dt2));
-                }
-            }
 
             // calculate acceleration from the accumulated forces
             acc.x = (force.x * p.invmass);
@@ -238,40 +226,16 @@ public class Simulator
             if (VERBOSE)
                 System.out.println("acc: " + acc);
 
-            newpos.x += dt * (vel.x + (dt2 * acc.x));
-            newpos.y += dt * (vel.y + (dt2 * acc.y));
-            newpos.z += dt * (vel.z + (dt2 * acc.z));
+            pos.x += dt * (vel.x + (dt2 * acc.x));
+            pos.y += dt * (vel.y + (dt2 * acc.y));
+            pos.z += dt * (vel.z + (dt2 * acc.z));
+
+            // pos has been changed, now the ex current position
+            // becomes the old position
+            p.oldCenter.set(oldpos);
 
             if (VERBOSE)
-                System.out.println("newpos: " + newpos);
-
-            force.set(ImmutableVect3D.zero);
-
-            world.process(p, dt);
-
-            collisions = collider.getCollisions(newpos);
-
-            if (collisions.size() > 0)
-            {
-                System.out.println(p);
-                System.out.println("colliding with " + collisions.size() + " objects");
-                for (final Shape obj : collisions)
-                {
-                    direction.set(vel).normalise();
-
-                    Collider.intersectRayBox(oldpos, direction, (Box) obj, isec, normal);
-
-                    // generate a sort of "impulse vector", but a force, not a velocity
-                    force.add(Maths.contactForce(vel, normal, p.bounciness, p.mass).div(dt));
-
-                    newpos.set(isec.add(normal.mul(0.01)));
-
-                    force.add(new Vect3D(1.0, 1.0, 0.0).mul(vel).invert().mul(0.4 * p.mass / dt));
-                }
-            }
-
-            if (VERBOSE)
-                System.out.println("processed: " + newpos);
+                System.out.println("newpos: " + pos);
 
             vel.x += dt * acc.x;
             vel.y += dt * acc.y;
@@ -279,6 +243,17 @@ public class Simulator
 
             if (VERBOSE)
                 System.out.println("vel: " + vel);
+
+            // now we finish the time step by re-calculating
+            // forces with the new velocity (see paper for details)
+
+            // recalculate force and correct position
+            force.set(ImmutableVect3D.zero);
+            world.process(p, dt2);
+            resolveCollisions(p, dt2);
+
+            if (VERBOSE)
+                System.out.println("processed: " + pos);
 
             acc.x = -acc.x + (force.x * p.invmass);
             acc.y = -acc.y + (force.y * p.invmass);
@@ -293,6 +268,59 @@ public class Simulator
 
             if (VERBOSE)
                 System.out.println("post: " + p);
+        }
+    }
+
+    private void resolveCollisions(final Particle p, final double dt)
+    {
+        final Vect3D pos = p.getCenter();
+
+        final List<Shape> collisions = collider.getCollisions(pos);
+
+        final Vect3D isec = new Vect3D();
+        final Vect3D normal = new Vect3D();
+        final Vect3D direction = new Vect3D();
+
+        if (collisions.size() > 0)
+        {
+            if (VERBOSE)
+            {
+                System.out.println(p);
+                System.out.println("colliding with " + collisions.size() + " objects");
+            }
+
+            for (final Shape obj : collisions)
+                if (Collider.test(p.oldCenter, (Box) obj))
+                {
+                    // if our previous position is within a box a too,
+                    // we cannot move at all
+
+                    p.vel.set(ImmutableVect3D.zero);
+
+                    // we reset the position to the previous one
+                    pos.set(p.oldCenter);
+
+                    break;
+                }
+                else
+                {
+                    // our movement (velocity) has brought us inside a box,
+                    // we must move back toward the old position and stop just outside the box,
+                    // then add a contact force
+
+                    direction.set(pos).sub(p.oldCenter).normalise();
+
+                    // FIXME: this should be extended to other Shapes!
+                    Collider.intersectRayBox(p.oldCenter, direction, (Box) obj, isec, normal);
+
+                    // generate a sort of "impulse vector", but a force, not a velocity
+                    p.force.add(Maths.contactForce(p.vel, normal, p.bounciness, p.mass).div(dt));
+
+                    // move the particle just before the Box
+                    pos.set(isec.add(normal.mul(0.01)));
+
+                    p.force.add(new Vect3D(1.0, 1.0, 0.0).mul(p.vel).invert().mul(0.4 * p.mass / dt));
+                }
         }
     }
 }

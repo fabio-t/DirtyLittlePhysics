@@ -2,9 +2,17 @@ package engine;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import shapes.Shape;
+import utils.ImmutableVect3D;
+import utils.Vect3D;
+import collision.BroadPhase;
+import environment.World;
 
 public class EngineTest
 {
@@ -13,7 +21,52 @@ public class EngineTest
     @Before
     public void setUp() throws Exception
     {
-        // simulator = new Simulator();
+        final World w = new World()
+        {
+
+            @Override
+            public void process(final Particle p, final double dt)
+            {
+            }
+
+            @Override
+            public ImmutableVect3D getGravity()
+            {
+                return null;
+            }
+
+            @Override
+            public void setGravity(final ImmutableVect3D gravity)
+            {
+            }
+        };
+
+        final BroadPhase b = new BroadPhase()
+        {
+            @Override
+            public void add(final Shape s)
+            {
+            }
+
+            @Override
+            public void remove(final Shape s)
+            {
+            }
+
+            @Override
+            public List<Shape> getPossibleCollisions(final Vect3D p)
+            {
+                return null;
+            }
+
+            @Override
+            public List<Shape> getCollisions(final Vect3D p)
+            {
+                return null;
+            }
+        };
+
+        simulator = new Simulator(w, b);
     }
 
     @After
@@ -80,7 +133,7 @@ public class EngineTest
 
         for (int i = 0; i < n; i++)
         {
-            p = new Particle();
+            p = new Particle(new Vect3D(10, 10, 10));
             simulator.addParticle(p);
         }
     }

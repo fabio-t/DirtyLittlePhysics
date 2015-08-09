@@ -72,15 +72,17 @@ public class TextSimulation
 
     public static void addParticles(final Simulator simulator, final int particles)
     {
+        final Vect3D center = new Vect3D();
         for (int i = 0; i < particles; i++)
         {
-            final Particle p = new Particle();
+            center.x = Math.random() * x_max * 2 - x_min;
+            center.y = Math.random() * y_max * 2 - y_min;
+            center.z = Math.random() * z_max * 2 - z_min;
+
+            final Particle p = new Particle(center);
+
             p.setRadius(Math.random() / 2.0 + 0.1);
             p.setMass(Math.random() * 100.0 + 50.0);
-            p.setCenter(new Vect3D(Math.random() * x_max * 2 - x_min, Math.random() * y_max * 2 - y_min, Math.random() *
-                                                                                                         z_max *
-                                                                                                         2 -
-                                                                                                         z_min));
             p.setVelocity(new ImmutableVect3D(Math.random() * 50 - 25, 0.0, 0.0));
             simulator.addParticle(p);
         }
@@ -95,7 +97,7 @@ public class TextSimulation
 
         final World world = new SimpleMap(x_min, x_max, y_min, y_max, z_min, z_max);
         final BroadPhase collider = new ArrayGrid2D((short) x_min, (short) x_max, (short) y_min, (short) y_max,
-                                                   (short) 10);
+                                                    (short) 10);
         final Simulator simulator = new Simulator(world, collider);
 
         System.out.println("Creating world..");

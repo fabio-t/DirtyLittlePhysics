@@ -29,7 +29,9 @@ import utils.Vect3D;
  */
 public interface BroadPhase
 {
-    public void add(final Shape p);
+    public void add(final Shape s);
+
+    public void remove(final Shape s);
 
     public List<Shape> getPossibleCollisions(final Vect3D p);
 

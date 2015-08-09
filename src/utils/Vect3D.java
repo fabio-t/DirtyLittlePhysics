@@ -79,6 +79,14 @@ public class Vect3D
         return true;
     }
 
+    public boolean equals(final ImmutableVect3D v)
+    {
+        if (x != v.x || y != v.y || z != v.z)
+            return false;
+
+        return true;
+    }
+
     public Vect3D set(final ImmutableVect3D v)
     {
         x = v.x;
@@ -315,6 +323,25 @@ public class Vect3D
     public static double dot(final Vect3D v1, final Vect3D v2)
     {
         return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+    }
+
+    public static double distance(final Vect3D v1, final Vect3D v2)
+    {
+        return Math.sqrt(squaredDistance(v1, v2));
+    }
+
+    public static double squaredDistance(final Vect3D v1, final Vect3D v2)
+    {
+        final double x = v1.x - v2.x;
+        final double y = v1.y - v2.y;
+        final double z = v1.z - v2.z;
+
+        return x * x + y * y + z * z;
+    }
+
+    public final Vect3D cross(final Vect3D v1, final Vect3D v2)
+    {
+        return new Vect3D(v1.y * v2.z - v1.z * v2.y, v1.x * v2.z - v1.z * v2.x, v1.x * v2.y - v1.y * v2.x);
     }
 
     public static Vect3D abs(final Vect3D v)

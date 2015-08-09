@@ -15,13 +15,13 @@ Will be my little dirty physics engine for games that don't need rigid body phys
 * Efficient collision test primitives for Point, Sphere and Box shapes
 * Graphical demo to play with particles and immediately see how this works (also good to see a fixed-timestep, variable rendering loop)
 * Text based demo to see the FPS/particles number limits on your platform
+* Static objects collision detection and resolution (for now only AABB are supported as static objects)
 
 ## TODO
 
 * Constraints (user-specified forces that act on conditions like simulation time, particle position/velocity/acceleration, etc)
-* Static objects collision detection and resolution
-* Terrain management, for now postponed to the user (through the Map and Cell interfaces that need to be implemented)
-* More interesting Shapes, like Capsules
+* Terrain management, for now postponed to the user (through the World interface that needs to be implemented)
+* More interesting Shapes, like Capsules, as well as "solid particles" for collision: for now, all collisions assume particles are points, not spheres
 
 ## Nice to have
 

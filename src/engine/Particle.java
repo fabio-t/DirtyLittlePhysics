@@ -52,11 +52,11 @@ public class Particle extends Sphere
     final Vect3D acc;
     final Vect3D force;
 
-    public Particle()
+    public Particle(final Vect3D pos)
     {
-        super(new Vect3D(), 1.0);
+        super(pos, 1.0);
 
-        oldCenter = new Vect3D();
+        oldCenter = new Vect3D(pos);
 
         mass = 1.0;
         invmass = 1.0;
@@ -153,9 +153,9 @@ public class Particle extends Sphere
         this.acc.set(acc);
     }
 
-    public void setForce(final Vect3D force)
+    public void setForce(final ImmutableVect3D zero)
     {
-        this.force.set(force);
+        force.set(zero);
     }
 
     /**
