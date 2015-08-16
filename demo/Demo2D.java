@@ -99,7 +99,7 @@ public class Demo2D extends JFrame
         render.createBufferStrategy(2);
         bufferstrat = render.getBufferStrategy();
 
-        NUM_PARTICLES = 100;
+        NUM_PARTICLES = 1;
 
         world = new SimpleMap(-width / 2, width / 2, -1, 1, -height / 2, height / 2);
         collider = new ArrayGrid2D((short) (-width / 2), (short) (width / 2), (short) -10, (short) 10, (short) 150);
@@ -148,12 +148,12 @@ public class Demo2D extends JFrame
 
             final Particle p = new Particle(realPos);
 
-            p.setRadius(Math.random() / 5.0 + 0.1);
-            p.setMass(Math.random() * 20.0 + 50.0);
-            p.setBounciness(Math.random() * 0.9);
-            // p.setMass(100.0);
-            // p.setRadius(0.25);
-            // p.setBounciness(0.5);
+            // p.setRadius(Math.random() / 5.0 + 0.1);
+            // p.setMass(Math.random() * 20.0 + 50.0);
+            // p.setBounciness(Math.random() * 0.9);
+            p.setMass(100.0);
+            p.setRadius(0.25);
+            p.setBounciness(0.5);
 
             // p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
 

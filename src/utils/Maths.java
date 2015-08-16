@@ -56,18 +56,23 @@ public class Maths
     /**
      * http://chrishecker.com/images/e/e7/Gdmphys3.pdf
      * 
-     * @param velocity
      * @param normal
+     * @param velocity
      * @param bounciness
      * @param mass
      * 
      * @return force in the direction of the contact normal
      */
-    public static Vect3D contactForce(final Vect3D velocity,
-                                      final Vect3D normal,
-                                      final double bounciness,
-                                      final double mass)
+    public static Vect3D impactForce(final Vect3D normal,
+                                     final Vect3D velocity,
+                                     final double bounciness,
+                                     final double mass)
     {
-        return new Vect3D(normal).mul(Vect3D.dot(normal, velocity) * -(1.0 + bounciness) * mass);
+        return new Vect3D(normal).mul(Math.round(Vect3D.dot(normal, velocity) * -(1.0 + bounciness) * mass));
+    }
+
+    public static Vect3D frictionForce(final Vect3D surface, final double ud, final double mass)
+    {
+        return new Vect3D(surface).invert().mul(ud * mass);
     }
 }

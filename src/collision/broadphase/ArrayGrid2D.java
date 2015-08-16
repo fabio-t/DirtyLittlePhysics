@@ -80,7 +80,10 @@ public class ArrayGrid2D implements BroadPhase
 
         invCellSize = 1.0 / cellSize;
 
-        cells = new ArrayList[cols * rows];
+        // FIXME: check why +1
+        cells = new ArrayList[cols * rows + 1];
+
+        // System.out.format("cols: %d, rows: %d, cells: %d\n", cols, rows, cols * rows + 1);
     }
 
     /**
@@ -220,7 +223,8 @@ public class ArrayGrid2D implements BroadPhase
         {
             tempx = x + i;
 
-            if (tempx < 0 || tempx >= cols)
+            // FIXME: was tempx >= cols: check why not
+            if (tempx < 0 || tempx > cols)
                 continue;
 
             for (int ii = -1; ii <= 1; ii++)
