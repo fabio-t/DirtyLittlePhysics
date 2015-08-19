@@ -153,4 +153,36 @@ public class SimpleMap implements World
         if (cell instanceof SolidCell)
             Forces.processImpact(p, (Box) cell, dt, ud);
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see environment.World#getForces(engine.Particle, double)
+     */
+    @Override
+    public Vect3D getForces(final Particle p, final double dt)
+    {
+        final Vect3D center = p.getCenter();
+
+        // the world handler gives us a Cell
+        // using the current player position
+        final Cell cell = getCell(center);
+
+        // gravity must be corrected by the buoyancy (if the cell has one).
+        // Note: normally this would only make sense for the "z" dimension,
+        // but who are we to limit your creativity?
+        final double buoyancy = cell.getBuoyancy(p);
+        final Vect3D force = new Vect3D(gravity).mul(buoyancy * p.getMass());
+
+        // many kind of environmental force
+        // could be applied to the particle,
+        // for example fluid drag, friction,
+        // impact forces
+        force.add(cell.getForces(p, dt));
+
+        if (cell instanceof SolidCell)
+            force.add(Forces.contact(p, (Box) cell, dt, ud));
+
+        return force;
+    }
 }
