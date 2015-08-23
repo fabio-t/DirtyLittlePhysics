@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.github.fabioticconi</groupId>
@@ -15,8 +16,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
+      <version>4.12</version>
     </dependency>
   </dependencies>
 
@@ -48,7 +48,7 @@
     <connection>scm:git:git@github.com:fabioticconi/DirtyLittlePhysics.git</connection>
     <url>scm:git:git@github.com:fabioticconi/DirtyLittlePhysics.git</url>
     <developerConnection>scm:git:git@github.com:fabioticconi/DirtyLittlePhysics.git</developerConnection>
-    <tag>0.2.2</tag>
+    <tag>0.2.3</tag>
   </scm>
 
 </project>
