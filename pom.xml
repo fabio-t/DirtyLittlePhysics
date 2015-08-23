@@ -4,7 +4,7 @@
 
   <groupId>com.github.fabioticconi</groupId>
   <artifactId>DirtyLittlePhysics</artifactId>
-  <version>0.2.4-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
 
   <name>DirtyLittlePhysics</name>
 
@@ -48,7 +48,6 @@
     <connection>scm:git:git@github.com:fabioticconi/DirtyLittlePhysics.git</connection>
     <url>scm:git:git@github.com:fabioticconi/DirtyLittlePhysics.git</url>
     <developerConnection>scm:git:git@github.com:fabioticconi/DirtyLittlePhysics.git</developerConnection>
-    <tag>0.2.3</tag>
   </scm>
 
 </project>
