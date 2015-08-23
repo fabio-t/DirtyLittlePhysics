@@ -19,25 +19,24 @@ package engine;
 import java.util.Arrays;
 import java.util.List;
 
-import shapes.Box;
-import shapes.Shape;
-import utils.Forces;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
 import collision.BroadPhase;
+import collision.Static;
+import collision.broadphase.NullBroadPhase;
+import environment.Forces;
 import environment.World;
+import environment.world.NullWorld;
 
 /**
- * Entry Vect3D for the engine. Simulates the movement of all
- * added particles by taking into consideration the properties of the
- * cell they are into. It uses Verlet Integration for fast and accurate simulation
- * of even velocity-dependent forces (like drag).
+ * Entry point of this engine. Simulates the movement of all
+ * added particles and keeps
  * 
  * @author Fabio Ticconi
  */
 public class Simulator
 {
-    public static final boolean VERBOSE       = true;
+    public static final boolean VERBOSE       = false;
 
     private World               world;
 
@@ -50,16 +49,10 @@ public class Simulator
     int                         NUM_OF_PARTICLES;
     Particle                    particles[];
 
-    public Simulator(final World world, final BroadPhase collider)
+    public Simulator()
     {
-        if (world == null)
-            throw new IllegalArgumentException("A world must be defined!");
-
-        if (collider == null)
-            throw new IllegalArgumentException("A collider must be defined!");
-
-        this.world = world;
-        this.collider = collider;
+        world = new NullWorld();
+        collider = new NullBroadPhase();
 
         particles = new Particle[MAX_PARTICLES];
         NUM_OF_PARTICLES = 0;
@@ -72,7 +65,7 @@ public class Simulator
         return this;
     }
 
-    public Simulator setCollider(final BroadPhase collider)
+    public Simulator setBroadPhase(final BroadPhase collider)
     {
         this.collider = collider;
 
@@ -274,7 +267,7 @@ public class Simulator
     {
         final Vect3D pos = p.getCenter();
 
-        final List<Shape> collisions = collider.getPossibleCollisions(pos);
+        final List<Static> collisions = collider.getPossibleCollisions(pos);
 
         if (collisions.size() > 0)
         {
@@ -284,8 +277,8 @@ public class Simulator
                 System.out.println("colliding with " + collisions.size() + " objects");
             }
 
-            for (final Shape obj : collisions)
-                if (Forces.processImpact(p, (Box) obj, dt, 0.4))
+            for (final Static obj : collisions)
+                if (Forces.processImpact(p, obj, dt))
                     return;
         }
     }

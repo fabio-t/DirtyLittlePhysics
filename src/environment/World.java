@@ -16,6 +16,7 @@
 package environment;
 
 import utils.ImmutableVect3D;
+import utils.Vect3D;
 import engine.Particle;
 
 /**
@@ -36,6 +37,15 @@ public interface World
      * @param dt
      */
     public void process(final Particle p, final double dt);
+
+    /**
+     * Returns the environmental forces acting on the particle.
+     * 
+     * @param p
+     * @param dt
+     * @return
+     */
+    public Vect3D getForces(final Particle p, final double dt);
 
     /**
      * Returns the gravity currently set for this world.

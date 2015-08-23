@@ -32,12 +32,18 @@ public class EngineTest
             @Override
             public ImmutableVect3D getGravity()
             {
-                return null;
+                return ImmutableVect3D.zero;
             }
 
             @Override
             public void setGravity(final ImmutableVect3D gravity)
             {
+            }
+
+            @Override
+            public Vect3D getForces(final Particle p, final double dt)
+            {
+                return new Vect3D(ImmutableVect3D.zero);
             }
         };
 

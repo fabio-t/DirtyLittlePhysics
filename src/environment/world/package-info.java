@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Fabio Ticconi
+ * Copyright 2015 Fabio Ticconi
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package utils;
-
 /**
- * Helper class for math operations relevant to the engine.
  * 
  * @author Fabio Ticconi
  */
-public class Maths
-{
-    public static double sphereDensity(final double mass, final double radius)
-    {
-        return mass / sphereVolume(radius);
-    }
-
-    public static double sphereVolume(final double radius)
-    {
-        return (4d / 3d) * Math.PI * radius * radius * radius;
-    }
-}
+package environment.world;
