@@ -47,6 +47,7 @@ public class Particle extends Sphere
     double       invmass;
     double       density;
     double       bounciness;
+    double       friction;
 
     final Vect3D vel;
     final Vect3D acc;
@@ -62,6 +63,7 @@ public class Particle extends Sphere
         invmass = 1.0;
         density = Maths.sphereDensity(1.0, radius);
         bounciness = 0.0;
+        friction = 0.4;
 
         vel = new Vect3D();
         acc = new Vect3D();
@@ -78,6 +80,7 @@ public class Particle extends Sphere
         invmass = 1.0 / mass;
         density = Maths.sphereDensity(mass, radius);
         bounciness = 0.0;
+        friction = 0.4;
 
         this.vel = vel;
         acc = new Vect3D();
@@ -116,6 +119,11 @@ public class Particle extends Sphere
     public void setBounciness(final double bounciness)
     {
         this.bounciness = bounciness;
+    }
+
+    public void setFriction(final double friction)
+    {
+        this.friction = friction;
     }
 
     /**
@@ -193,6 +201,11 @@ public class Particle extends Sphere
     public double getBounciness()
     {
         return bounciness;
+    }
+
+    public double getFriction()
+    {
+        return friction;
     }
 
     public Vect3D getVelocity()

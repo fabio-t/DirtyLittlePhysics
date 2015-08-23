@@ -2,12 +2,12 @@ package maps;
 
 import maps.cells.FluidCell;
 import maps.cells.SolidCell;
-import shapes.Box;
-import utils.Forces;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
 import collision.Collider;
+import collision.Static;
 import engine.Particle;
+import environment.Forces;
 import environment.World;
 
 /**
@@ -45,8 +45,6 @@ public class SimpleMap implements World
 
     private ImmutableVect3D        gravity;
 
-    private final double           ud;
-
     public SimpleMap(final int x_min,
                      final int x_max,
                      final int y_min,
@@ -75,8 +73,6 @@ public class SimpleMap implements World
         ground.setMaxPoint(new Vect3D(max.x, max.y, (max.z + min.z) / 2.0));
 
         gravity = new ImmutableVect3D(0d, 0d, -9.81d);
-
-        ud = 0.4;
     }
 
     public Cell getCell(final Vect3D p)
@@ -151,7 +147,7 @@ public class SimpleMap implements World
         force.add(cell.getForces(p, dt)).add(gForce);
 
         if (cell instanceof SolidCell)
-            Forces.processImpact(p, (Box) cell, dt, ud);
+            Forces.processImpact(p, (Static) cell, dt);
     }
 
     /*
@@ -181,7 +177,7 @@ public class SimpleMap implements World
         force.add(cell.getForces(p, dt));
 
         if (cell instanceof SolidCell)
-            force.add(Forces.contact(p, (Box) cell, dt, ud));
+            force.add(Forces.contact(p, (Static) cell, dt));
 
         return force;
     }

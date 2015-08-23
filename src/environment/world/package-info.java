@@ -13,26 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package collision;
-
-import java.util.List;
-
-import utils.Vect3D;
-
 /**
- * Interface to a broad phase collision system.
- * Concrete classes should aim to provide as fast as possible
- * implementations of these methods.
  * 
  * @author Fabio Ticconi
  */
-public interface BroadPhase
-{
-    public void add(final Static s);
-
-    public void remove(final Static s);
-
-    public List<Static> getPossibleCollisions(final Vect3D p);
-
-    public List<Static> getCollisions(final Vect3D p);
-}
+package environment.world;

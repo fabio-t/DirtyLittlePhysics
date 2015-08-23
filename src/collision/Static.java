@@ -15,24 +15,47 @@
  */
 package collision;
 
-import java.util.List;
-
+import shapes.Box;
 import utils.Vect3D;
 
 /**
- * Interface to a broad phase collision system.
- * Concrete classes should aim to provide as fast as possible
- * implementations of these methods.
  * 
  * @author Fabio Ticconi
  */
-public interface BroadPhase
+public class Static extends Box
 {
-    public void add(final Static s);
+    protected double friction;
 
-    public void remove(final Static s);
+    /**
+     * 
+     * @param min
+     * @param max
+     */
+    public Static(final Vect3D min, final Vect3D max)
+    {
+        super(min, max);
+    }
 
-    public List<Static> getPossibleCollisions(final Vect3D p);
+    /**
+     * 
+     * @param min
+     * @param max
+     * @param friction
+     */
+    public Static(final Vect3D min, final Vect3D max, final double friction)
+    {
+        super(min, max);
 
-    public List<Static> getCollisions(final Vect3D p);
+        this.friction = friction;
+    }
+
+    public double getFriction()
+    {
+        return friction;
+    }
+
+    public void setFriction(final double friction)
+    {
+        this.friction = friction;
+    }
 }

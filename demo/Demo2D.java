@@ -42,6 +42,7 @@ import maps.SimpleMap;
 import shapes.Box;
 import utils.Vect3D;
 import collision.BroadPhase;
+import collision.Static;
 import collision.broadphase.ArrayGrid2D;
 import engine.Particle;
 import engine.Simulator;
@@ -55,8 +56,8 @@ public class Demo2D extends JFrame
     private final ArrayList<Particle>             particles        = new ArrayList<Particle>(500);
     private final ConcurrentLinkedQueue<Particle> newParticles     = new ConcurrentLinkedQueue<Particle>();
 
-    private final ArrayList<Box>                  objects          = new ArrayList<Box>(500);
-    private final ConcurrentLinkedQueue<Box>      newObjects       = new ConcurrentLinkedQueue<Box>();
+    private final ArrayList<Static>               objects          = new ArrayList<Static>(500);
+    private final ConcurrentLinkedQueue<Static>   newObjects       = new ConcurrentLinkedQueue<Static>();
 
     private BufferStrategy                        bufferstrat      = null;
     private final Canvas                          render;
@@ -103,7 +104,9 @@ public class Demo2D extends JFrame
 
         world = new SimpleMap(-width / 2, width / 2, -1, 1, -height / 2, height / 2);
         collider = new ArrayGrid2D((short) (-width / 2), (short) (width / 2), (short) -10, (short) 10, (short) 150);
-        simulator = new Simulator(world, collider);
+        simulator = new Simulator();
+        simulator.setWorld(world);
+        simulator.setBroadPhase(collider);
     }
 
     public Vect3D transformToSim(final Point p)
@@ -153,7 +156,7 @@ public class Demo2D extends JFrame
             // p.setBounciness(Math.random() * 0.9);
             p.setMass(100.0);
             p.setRadius(0.25);
-            p.setBounciness(0.5);
+            p.setBounciness(1.0);
 
             // p.setVelocity(new Vect3D(Math.random() * 50 - 25, 0.0, 0.0));
 
@@ -173,7 +176,7 @@ public class Demo2D extends JFrame
         {
             final Vect3D realPos = transformToSim(pos);
 
-            final Box o = new Box(realPos, realPos); // fake min-max
+            final Static o = new Static(realPos, realPos, 0.4);
 
             final Vect3D extent = new Vect3D(Math.random() + 0.1, 0.5, Math.random() + 0.1).mul(50);
             o.setCenterExtent(realPos, extent); // will correct min-max too
@@ -230,7 +233,7 @@ public class Demo2D extends JFrame
     private void processInput()
     {
         final Particle p = newParticles.poll();
-        final Box o = newObjects.poll();
+        final Static o = newObjects.poll();
 
         if (o != null)
         {

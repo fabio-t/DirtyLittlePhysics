@@ -13,49 +13,64 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package maps.cells;
+package environment.world;
 
-import maps.Cell;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
-import collision.Static;
 import engine.Particle;
+import environment.World;
 
 /**
+ * If a {@link World} is not set, {@link Simulator} will
+ * default to this. Gravity is zero and no force is ever
+ * returned.
  * 
  * @author Fabio Ticconi
  */
-public class SolidCell extends Static implements Cell
+public class NullWorld implements World
 {
-    public SolidCell()
+    /*
+     * (non-Javadoc)
+     * 
+     * @see environment.World#process(engine.Particle, double)
+     */
+    @Override
+    public void process(final Particle p, final double dt)
     {
-        super(new Vect3D(), new Vect3D());
-
-        friction = 0.4;
+        // do nothing
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see engine.Simulator.Cell#getForces(engine.Particle)
+     * @see environment.World#getForces(engine.Particle, double)
      */
     @Override
     public Vect3D getForces(final Particle p, final double dt)
     {
-        // FIXME: this is becoming useless, the cell division could probably
-        // all go inside SimpleMap
-
-        return new Vect3D(ImmutableVect3D.zero);
+        return new Vect3D(0.0, 0.0, 0.0);
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see environment.Cell#getBuoyancy(engine.Particle)
+     * @see environment.World#getGravity()
      */
     @Override
-    public double getBuoyancy(final Particle p)
+    public ImmutableVect3D getGravity()
     {
-        return 1.0;
+        return ImmutableVect3D.zero;
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see environment.World#setGravity(utils.ImmutableVect3D)
+     */
+    @Override
+    public void setGravity(final ImmutableVect3D gravity)
+    {
+        // do nothing
+    }
+
 }

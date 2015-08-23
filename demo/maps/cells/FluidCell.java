@@ -16,16 +16,16 @@
 package maps.cells;
 
 import maps.Cell;
-import shapes.Box;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
+import collision.Static;
 import engine.Particle;
 
 /**
  * 
  * @author Fabio Ticconi
  */
-public class FluidCell extends Box implements Cell
+public class FluidCell extends Static implements Cell
 {
     // Common densities
     public final static double AIR_DENSITY   = 1.1d;
@@ -44,6 +44,8 @@ public class FluidCell extends Box implements Cell
         flowSpeed = new Vect3D(ImmutableVect3D.zero);
 
         dragV = 0.25 * Math.PI * density;
+
+        friction = 0.0;
     }
 
     /**

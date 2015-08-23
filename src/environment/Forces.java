@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package utils;
+package environment;
 
-import shapes.Box;
+import utils.ImmutableVect3D;
+import utils.Vect3D;
 import collision.Collider;
+import collision.Static;
 import engine.Particle;
 import engine.Simulator;
 
@@ -44,7 +46,7 @@ public class Forces
      * @param ud
      * @return
      */
-    public static boolean processImpact(final Particle p, final Box box, final double dt, final double ud)
+    public static boolean processImpact(final Particle p, final Static box, final double dt)
     {
         final Vect3D force = p.getForce();
         final Vect3D vel = p.getVelocity();
@@ -52,6 +54,7 @@ public class Forces
         final Vect3D oldpos = p.getOldCenter();
         final double b = p.getBounciness();
         final double m = p.getMass();
+        final double ud = (p.getFriction() + box.getFriction()) / 2.0;
 
         // if the previous position is in the box, then
         // we shouldn't do anything: we are stuck
@@ -119,7 +122,7 @@ public class Forces
         return false;
     }
 
-    public static Vect3D contact(final Particle p, final Box box, final double dt, final double ud)
+    public static Vect3D contact(final Particle p, final Static box, final double dt)
     {
         if (Collider.test(p.getCenter(), box))
         {
@@ -133,6 +136,7 @@ public class Forces
             final Vect3D oldpos = p.getOldCenter();
             final double b = p.getBounciness();
             final double m = p.getMass();
+            final double ud = (p.getFriction() + box.getFriction()) / 2.0;
 
             final Vect3D isec = new Vect3D();
             final Vect3D normal = new Vect3D();
