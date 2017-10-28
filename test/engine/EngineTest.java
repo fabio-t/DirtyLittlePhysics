@@ -1,18 +1,17 @@
 package engine;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
+import collision.BroadPhase;
+import environment.World;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import shapes.Shape;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
-import collision.BroadPhase;
-import environment.World;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class EngineTest
 {
@@ -108,8 +107,7 @@ public class EngineTest
      * When the number of particles becomes exactly equal to
      * 1000*2^N where N is an integer, the array will double
      * in size.
-     */
-    public final void testExtendArray()
+     */ public final void testExtendArray()
     {
         removeAllParticles();
 

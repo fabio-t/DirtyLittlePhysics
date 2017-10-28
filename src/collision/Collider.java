@@ -1,28 +1,27 @@
-/**
- * Copyright 2015 Fabio Ticconi
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Copyright 2015 Fabio Ticconi
+  <p>
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  <p>
+  http://www.apache.org/licenses/LICENSE-2.0
+  <p>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 package collision;
 
+import engine.Simulator;
 import shapes.Box;
 import shapes.Sphere;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
-import engine.Simulator;
 
 /**
- * 
  * @author Fabio Ticconi
  */
 public abstract class Collider
@@ -39,17 +38,14 @@ public abstract class Collider
             return false;
         if (b1_max.y < b2_min.y || b1_min.y > b2_max.y)
             return false;
-        if (b1_max.z < b2_min.z || b1_min.z > b2_max.z)
-            return false;
-
-        return true;
+        return !(b1_max.z < b2_min.z) && !(b1_min.z > b2_max.z);
     }
 
     public static boolean test(final Sphere s1, final Sphere s2)
     {
         final Vect3D d = Vect3D.sub(s1.getCenter(), s2.getCenter());
 
-        final double dist2 = Vect3D.dot(d, d);
+        final double dist2  = Vect3D.dot(d, d);
         final double radSum = s1.getRadius() + s2.getRadius();
 
         return dist2 < (radSum * radSum);
@@ -67,7 +63,7 @@ public abstract class Collider
 
     public static boolean test(final Vect3D p, final Sphere s)
     {
-        final double dist2 = Vect3D.dot(p, p);
+        final double dist2  = Vect3D.dot(p, p);
         final double radSum = s.getRadius() + s.getRadius();
 
         return dist2 < (radSum * radSum);
@@ -82,32 +78,24 @@ public abstract class Collider
             return false;
         if (max.y < p.y || min.y > p.y)
             return false;
-        if (max.z < p.z || min.z > p.z)
-            return false;
-
-        return true;
+        return !(max.z < p.z) && !(min.z > p.z);
     }
 
     /**
      * Finds the closest point from the given point to the given segment, if it exists.
      * Taken from Ericson, "Real-time collision detection".
-     * 
-     * @param p
-     *            point outside of the segment
-     * @param start
-     *            one of the ends of the segment
-     * @param end
-     *            the other end of the segment
-     * @param isec
-     *            will contain the closest point to p on the segment. It
-     *            will always overwrite the content: if the point is outside
-     *            the segment interval, it will be clamped to either start or end
-     * 
+     *
+     * @param p     point outside of the segment
+     * @param start one of the ends of the segment
+     * @param end   the other end of the segment
+     * @param isec  will contain the closest point to p on the segment. It
+     *              will always overwrite the content: if the point is outside
+     *              the segment interval, it will be clamped to either start or end
      * @return t as in d(t) = a + t*(b - a), or 0.0 or 1.0 if outside
      */
     public static double closestPointToSegment(final Vect3D p, final Vect3D start, final Vect3D end, final Vect3D isec)
     {
-        final Vect3D segment = Vect3D.sub(end, start);
+        final Vect3D segment      = Vect3D.sub(end, start);
         final Vect3D pointToStart = Vect3D.sub(start, p);
 
         // project p onto the segment, but deferring a division
@@ -142,14 +130,10 @@ public abstract class Collider
     /**
      * Returns the squared distance between a point p and a segment.
      * Taken from Ericson, "Real-time collision detection".
-     * 
-     * @param p
-     *            the point
-     * @param start
-     *            one of the ends of the segment
-     * @param end
-     *            the other end of the segment
-     * 
+     *
+     * @param p     the point
+     * @param start one of the ends of the segment
+     * @param end   the other end of the segment
      * @return squared distance
      */
     public static double sqDistPointSegment(final Vect3D p, final Vect3D start, final Vect3D end)
@@ -157,7 +141,7 @@ public abstract class Collider
         final Vect3D segment = Vect3D.sub(end, start);
 
         final Vect3D pStart = Vect3D.sub(p, start);
-        final Vect3D pEnd = Vect3D.sub(p, end);
+        final Vect3D pEnd   = Vect3D.sub(p, end);
 
         final double e = Vect3D.dot(pStart, segment);
 
@@ -179,25 +163,16 @@ public abstract class Collider
      * direction vector) as well as a {@link Box}, and finds the
      * point of interesection of the ray with the box if one
      * exists. Code adapted from toxiclibs.
-     * 
-     * @param origin
-     *            start point of the ray
-     * @param direction
-     *            normalised direction vector
-     * @param b
-     *            the AABB box to check against
-     * @param isec
-     *            will contain the intersection point if one exists
-     * @param normalOut
-     *            will contain the normal containing isec if found
-     * 
+     *
+     * @param origin    start point of the ray
+     * @param direction normalised direction vector
+     * @param b         the AABB box to check against
+     * @param isec      will contain the intersection point if one exists
+     * @param normalOut will contain the normal containing isec if found
      * @return the distance between origin and isec
      */
-    public static double intersectRayBox(final Vect3D origin,
-                                         final Vect3D direction,
-                                         final Box b,
-                                         final Vect3D isec,
-                                         final Vect3D normalOut)
+    public static void intersectRayBox(final Vect3D origin, final Vect3D direction, final Box b, final Vect3D isec,
+                                       final Vect3D normalOut)
     {
         ImmutableVect3D normal;
 
@@ -205,8 +180,12 @@ public abstract class Collider
         final Vect3D max = b.getMaxPoint();
 
         if (Simulator.VERBOSE)
-            System.out.format("\n#collider#\norigin: %s\ndirection: %s\ndir. length: %s\nbmin: %s\nbmax: %s\n", origin,
-                              direction, direction.length(), min, max);
+            System.out.format("\n#collider#\norigin: %s\ndirection: %s\ndir. length: %s\nbmin: %s\nbmax: %s\n",
+                              origin,
+                              direction,
+                              direction.length(),
+                              min,
+                              max);
 
         final Vect3D invDir = Vect3D.reciprocal(direction);
         if (Simulator.VERBOSE)
@@ -216,9 +195,9 @@ public abstract class Collider
         final boolean signDirY = invDir.y < 0;
         final boolean signDirZ = invDir.z < 0;
 
-        Vect3D bbox = signDirX ? max : min;
+        Vect3D       bbox     = signDirX ? max : min;
         final double xmindist = bbox.x - origin.x;
-        double tmin = xmindist * invDir.x;
+        double       tmin     = xmindist * invDir.x;
 
         normal = signDirX ? ImmutableVect3D.xaxis : ImmutableVect3D.xaxisinv;
 
@@ -227,13 +206,13 @@ public abstract class Collider
 
         bbox = signDirY ? max : min;
         final double ymindist = bbox.y - origin.y;
-        final double tymin = ymindist * invDir.y;
+        final double tymin    = ymindist * invDir.y;
 
         bbox = signDirY ? min : max;
         final double tymax = (bbox.y - origin.y) * invDir.y;
 
         if ((tmin > tymax) || (tymin > tmax))
-            return 0.0;
+            return;
 
         // take the maximum of the t(x)min and tymin,
         // and take the correct normal now to save later
@@ -251,13 +230,13 @@ public abstract class Collider
 
         bbox = signDirZ ? max : min;
         final double zmindist = bbox.z - origin.z;
-        final double tzmin = zmindist * invDir.z;
+        final double tzmin    = zmindist * invDir.z;
 
         bbox = signDirZ ? min : max;
         final double tzmax = (bbox.z - origin.z) * invDir.z;
 
         if ((tmin > tzmax) || (tzmin > tmax))
-            return 0.0;
+            return;
 
         // take the maximum of (txmin,tymin) and tzmin,
         // and take the correct normal now to save later
@@ -285,6 +264,5 @@ public abstract class Collider
 
         normalOut.set(normal);
 
-        return tmin;
     }
 }

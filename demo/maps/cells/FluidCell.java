@@ -1,28 +1,27 @@
-/**
- * Copyright 2015 Fabio Ticconi
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Copyright 2015 Fabio Ticconi
+  <p>
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  <p>
+  http://www.apache.org/licenses/LICENSE-2.0
+  <p>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 package maps.cells;
 
+import collision.Static;
+import engine.Particle;
 import maps.Cell;
 import utils.ImmutableVect3D;
 import utils.Vect3D;
-import collision.Static;
-import engine.Particle;
 
 /**
- * 
  * @author Fabio Ticconi
  */
 public class FluidCell extends Static implements Cell
@@ -30,11 +29,9 @@ public class FluidCell extends Static implements Cell
     // Common densities
     public final static double AIR_DENSITY   = 1.1d;
     public final static double WATER_DENSITY = 1000d;
-
-    private final Vect3D       flowSpeed;
-
-    public final double        dragV;
-    public final double        density;
+    private final double dragV;
+    private final double density;
+    private final Vect3D flowSpeed;
 
     public FluidCell(final double density)
     {
@@ -49,7 +46,6 @@ public class FluidCell extends Static implements Cell
     }
 
     /**
-     * 
      * @param v
      */
     public void setFlowSpeed(final Vect3D v)
@@ -73,9 +69,8 @@ public class FluidCell extends Static implements Cell
     }
 
     /**
-     * Reference: {@link http://lorien.ncl.ac.uk/ming/particle/cpe124p2.html}
-     * 
-     * 
+     * Reference: <a href="http://lorien.ncl.ac.uk/ming/particle/cpe124p2.html"></a>
+     *
      * @see maps.Cell#getBuoyancy(engine.Particle)
      */
     @Override

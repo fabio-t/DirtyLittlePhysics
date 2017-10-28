@@ -1,53 +1,49 @@
-/**
- * Copyright 2014 Fabio Ticconi
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Copyright 2014 Fabio Ticconi
+  <p>
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  <p>
+  http://www.apache.org/licenses/LICENSE-2.0
+  <p>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 
 package engine;
 
-import java.util.Arrays;
-import java.util.List;
-
-import utils.ImmutableVect3D;
-import utils.Vect3D;
 import collision.BroadPhase;
 import collision.Static;
 import collision.broadphase.NullBroadPhase;
 import environment.Forces;
 import environment.World;
 import environment.world.NullWorld;
+import utils.ImmutableVect3D;
+import utils.Vect3D;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Entry point of this engine. Simulates the movement of all
  * added particles and keeps
- * 
+ *
  * @author Fabio Ticconi
  */
 public class Simulator
 {
     public static final boolean VERBOSE       = false;
-
-    private World               world;
-
-    private BroadPhase          collider;
-
     // initial maximum number of particles, used to
     // initialise the array
-    public int                  MAX_PARTICLES = 1000;
-
-    int                         NUM_OF_PARTICLES;
-    Particle                    particles[];
+    private             int     MAX_PARTICLES = 1000;
+    private int        NUM_OF_PARTICLES;
+    private Particle[] particles;
+    private World      world;
+    private BroadPhase collider;
 
     public Simulator()
     {
@@ -58,24 +54,22 @@ public class Simulator
         NUM_OF_PARTICLES = 0;
     }
 
-    public Simulator setWorld(final World world)
+    public void setWorld(final World world)
     {
         this.world = world;
 
-        return this;
     }
 
-    public Simulator setBroadPhase(final BroadPhase collider)
+    public void setBroadPhase(final BroadPhase collider)
     {
         this.collider = collider;
 
-        return this;
     }
 
     /**
      * Returns the number of currently active
      * particles.
-     * 
+     *
      * @return
      */
     public int getParticlesNumber()
@@ -86,9 +80,8 @@ public class Simulator
     /**
      * Adds a new particle to the simulator.<br />
      * O(1)
-     * 
-     * @param p
-     *            {@link Particle} to be added
+     *
+     * @param p {@link Particle} to be added
      */
     public void addParticle(final Particle p)
     {
@@ -110,9 +103,8 @@ public class Simulator
      * Removes a particle from the simulator,
      * if it was there. <br />
      * O(N)
-     * 
-     * @param p
-     *            {@link Particle} to be removed
+     *
+     * @param p {@link Particle} to be removed
      */
     public void removeParticle(final Particle p)
     {
@@ -142,15 +134,14 @@ public class Simulator
      * fluid drag). Reference (particle physics paper):
      * http://pages.csam.montclair.edu/~yecko/ferro/papers/FerroDPD/GrootWarren_ReviewDPD_97.pdf
      * </p>
-     * 
+     * <p>
      * <p>
      * However, as also described here: http://gamedev.stackexchange.com/a/41917/51181 we used a lambda of 1 and
      * re-arranged a bit to reduce the number of divisions and multiplications. Semantically is the same as the above
      * paper.
      * </p>
-     * 
-     * @param dt
-     *            how much to advance the simulation of
+     *
+     * @param dt how much to advance the simulation of
      */
     public void update(final double dt)
     {
@@ -161,12 +152,12 @@ public class Simulator
         // a few divisions
         final double dt2 = dt / 2.0;
 
-        Particle p;
-        Vect3D acc;
-        Vect3D force;
-        Vect3D vel;
+        Particle     p;
+        Vect3D       acc;
+        Vect3D       force;
+        Vect3D       vel;
         final Vect3D oldpos = new Vect3D();
-        Vect3D pos;
+        Vect3D       pos;
         for (int i = 0; i < NUM_OF_PARTICLES; i++)
         {
             p = particles[i];

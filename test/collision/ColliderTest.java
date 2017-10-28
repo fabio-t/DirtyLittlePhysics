@@ -1,19 +1,18 @@
 package collision;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import shapes.Box;
 import utils.Vect3D;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class ColliderTest
 {
-    static Box    b1;
-    static Box    b2;
-    static Box    b3;
+    static Box b1;
+    static Box b2;
+    static Box b3;
 
     static Vect3D p1;
     static Vect3D p2;

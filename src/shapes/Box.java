@@ -1,36 +1,35 @@
-/**
- * Copyright 2015 Fabio Ticconi
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Copyright 2015 Fabio Ticconi
+  <p>
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  <p>
+  http://www.apache.org/licenses/LICENSE-2.0
+  <p>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 package shapes;
 
-import utils.Vect3D;
 import collision.Collider;
+import utils.Vect3D;
 
 /**
- * 
  * @author Fabio Ticconi
  */
 public class Box implements Shape
 {
-    protected final Vect3D min;
-    protected final Vect3D max;
+    private final Vect3D min;
+    private final Vect3D max;
 
-    protected final Vect3D center;
-    protected final Vect3D extent;
+    private final Vect3D center;
+    private final Vect3D extent;
 
-    public Box(final Vect3D min, final Vect3D max)
+    protected Box(final Vect3D min, final Vect3D max)
     {
         this.min = new Vect3D(min);
         this.max = new Vect3D(max);
@@ -81,16 +80,9 @@ public class Box implements Shape
         recalculateMinMax();
     }
 
-    public void setCenter(final Vect3D center)
-    {
-        this.center.set(center);
-
-        recalculateMinMax();
-    }
-
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see shapes.Shape#getCenter()
      */
     @Override
@@ -99,9 +91,9 @@ public class Box implements Shape
         return center;
     }
 
-    public void setExtent(final Vect3D extent)
+    public void setCenter(final Vect3D center)
     {
-        this.extent.set(extent);
+        this.center.set(center);
 
         recalculateMinMax();
     }
@@ -109,6 +101,13 @@ public class Box implements Shape
     public Vect3D getExtent()
     {
         return extent;
+    }
+
+    public void setExtent(final Vect3D extent)
+    {
+        this.extent.set(extent);
+
+        recalculateMinMax();
     }
 
     private void recalculateMinMax()

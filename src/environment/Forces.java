@@ -1,29 +1,28 @@
-/**
- * Copyright 2015 Fabio Ticconi
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Copyright 2015 Fabio Ticconi
+  <p>
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  <p>
+  http://www.apache.org/licenses/LICENSE-2.0
+  <p>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 package environment;
 
-import utils.ImmutableVect3D;
-import utils.Vect3D;
 import collision.Collider;
 import collision.Static;
 import engine.Particle;
 import engine.Simulator;
+import utils.ImmutableVect3D;
+import utils.Vect3D;
 
 /**
- * 
  * @author Fabio Ticconi
  */
 public class Forces
@@ -32,29 +31,28 @@ public class Forces
      * When a particle has both old and current position within a box,
      * we must zero the velocity because in that case no further movement is allowed:
      * the particle is effectively stuck.
-     * 
+     * <p>
      * In the more common case of the old position outside the box, if the current position
      * is within the box then we must move back along the contact normal and apply a
      * a repelling force (as well as set the position to just outside the box itself).
-     * 
+     * <p>
      * We also have to apply friction on the contact surface, if the particle is moving
      * there too.
-     * 
+     *
      * @param p
      * @param box
      * @param dt
-     * @param ud
      * @return
      */
     public static boolean processImpact(final Particle p, final Static box, final double dt)
     {
-        final Vect3D force = p.getForce();
-        final Vect3D vel = p.getVelocity();
-        final Vect3D pos = p.getCenter();
+        final Vect3D force  = p.getForce();
+        final Vect3D vel    = p.getVelocity();
+        final Vect3D pos    = p.getCenter();
         final Vect3D oldpos = p.getOldCenter();
-        final double b = p.getBounciness();
-        final double m = p.getMass();
-        final double ud = (p.getFriction() + box.getFriction()) / 2.0;
+        final double b      = p.getBounciness();
+        final double m      = p.getMass();
+        final double ud     = (p.getFriction() + box.getFriction()) / 2.0;
 
         // if the previous position is in the box, then
         // we shouldn't do anything: we are stuck
@@ -75,8 +73,8 @@ public class Forces
             // we must move back towards the old position and stop just outside the box,
             // then add a contact force
 
-            final Vect3D isec = new Vect3D();
-            final Vect3D normal = new Vect3D();
+            final Vect3D isec      = new Vect3D();
+            final Vect3D normal    = new Vect3D();
             final Vect3D direction = new Vect3D(pos).sub(oldpos).normalise();
 
             // FIXME: this should be extended to other Shapes!
@@ -130,16 +128,16 @@ public class Forces
             // we must move back towards the old position and stop just outside the box,
             // then add a contact force
 
-            final Vect3D force = p.getForce();
-            final Vect3D vel = p.getVelocity();
-            final Vect3D pos = p.getCenter();
+            final Vect3D force  = p.getForce();
+            final Vect3D vel    = p.getVelocity();
+            final Vect3D pos    = p.getCenter();
             final Vect3D oldpos = p.getOldCenter();
-            final double b = p.getBounciness();
-            final double m = p.getMass();
-            final double ud = (p.getFriction() + box.getFriction()) / 2.0;
+            final double b      = p.getBounciness();
+            final double m      = p.getMass();
+            final double ud     = (p.getFriction() + box.getFriction()) / 2.0;
 
-            final Vect3D isec = new Vect3D();
-            final Vect3D normal = new Vect3D();
+            final Vect3D isec      = new Vect3D();
+            final Vect3D normal    = new Vect3D();
             final Vect3D direction = new Vect3D(pos).sub(oldpos).normalise();
 
             // FIXME: this should be extended to other Shapes!
@@ -187,14 +185,13 @@ public class Forces
 
     /**
      * Force caused by fluid pushing against a sphere. It acts in the same direction of the fluid velocity.
-     * 
+     *
      * @param fluidVelocity
      * @param fluidDensity
      * @param radius
      * @return
      */
-    public static Vect3D
-            sphereQuadraticFlow(final Vect3D fluidVelocity, final double fluidDensity, final double radius)
+    public static Vect3D sphereQuadraticFlow(final Vect3D fluidVelocity, final double fluidDensity, final double radius)
     {
         final Vect3D flow = Vect3D.abs(fluidVelocity);
         flow.mul(fluidVelocity).mul(Math.PI * radius * radius * fluidDensity * 0.25);
@@ -204,9 +201,9 @@ public class Forces
 
     /**
      * Force caused by sphere moving through a fluid. It acts in the opposite direction of the fluid velocity.
-     * 
+     * <p>
      * Implements Stoke's Law.
-     * 
+     *
      * @param velocity
      * @param viscosity
      * @param radius
@@ -219,9 +216,9 @@ public class Forces
 
     /**
      * Force caused by sphere moving through a fluid. It acts in the opposite direction of the fluid velocity.
-     * 
+     * <p>
      * Implements a simplified quadratic drag (assuming a fixed coefficient).
-     * 
+     *
      * @param velocity
      * @param fluidDensity
      * @param radius
@@ -237,12 +234,11 @@ public class Forces
 
     /**
      * http://chrishecker.com/images/e/e7/Gdmphys3.pdf
-     * 
+     *
      * @param normal
      * @param velocity
      * @param bounciness
      * @param mass
-     * 
      * @return force in the direction of the contact normal
      */
     public static Vect3D impact(final Vect3D normal, final Vect3D velocity, final double bounciness, final double mass)
@@ -253,7 +249,7 @@ public class Forces
     /**
      * Force caused by a body moving on a surface. It acts in the opposite direction of the tangential components of
      * velocity.
-     * 
+     *
      * @param surface
      * @param ud
      * @param mass

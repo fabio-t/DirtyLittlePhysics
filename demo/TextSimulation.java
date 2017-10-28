@@ -1,40 +1,44 @@
-import maps.SimpleMap;
-import utils.ImmutableVect3D;
-import utils.Vect3D;
 import collision.BroadPhase;
 import collision.broadphase.ArrayGrid2D;
 import engine.Particle;
 import engine.Simulator;
 import environment.World;
+import maps.SimpleMap;
+import utils.ImmutableVect3D;
+import utils.Vect3D;
 
-/**
- * Copyright 2015 Fabio Ticconi
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Copyright 2015 Fabio Ticconi
+  <p>
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  <p>
+  http://www.apache.org/licenses/LICENSE-2.0
+  <p>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 
 /**
- * 
  * @author Fabio Ticconi
  */
-public class TextSimulation
+class TextSimulation
 {
-    static int x_min, x_max, y_min, y_max, z_min, z_max;
+    private static int x_min;
+    private static int x_max;
+    private static int y_min;
+    private static int y_max;
+    private static int z_min;
+    private static int z_max;
 
-    public static void loop(final Simulator simulator, final long maxDurationInMillis, final int FPS)
+    private static void loop(final Simulator simulator, final long maxDurationInMillis, final int FPS)
     {
         final double frameDuration = 1000.0 / FPS;
-        final double dt = frameDuration / 1000.0;
+        final double dt            = frameDuration / 1000.0;
 
         System.out.println(String.format("FPS: %d, frameDuration: %f, dt: %f", FPS, frameDuration, dt));
 
@@ -42,10 +46,10 @@ public class TextSimulation
         long currentTime;
 
         double lag = 0.0;
-        long elapsed;
+        long   elapsed;
 
-        final long start = System.nanoTime();
-        final long endCondition = start + maxDurationInMillis * 1000000l;
+        final long start        = System.nanoTime();
+        final long endCondition = start + maxDurationInMillis * 1000000L;
         while (endCondition > System.nanoTime())
         {
             currentTime = System.currentTimeMillis();
@@ -66,11 +70,13 @@ public class TextSimulation
         }
         final long end = System.nanoTime();
 
-        System.out.println(String.format("Simulated %d ms in %f ms. Lag: %f ms\n", maxDurationInMillis,
-                                         (end - start) / 1000000.0, lag));
+        System.out.println(String.format("Simulated %d ms in %f ms. Lag: %f ms\n",
+                                         maxDurationInMillis,
+                                         (end - start) / 1000000.0,
+                                         lag));
     }
 
-    public static void addParticles(final Simulator simulator, final int particles)
+    private static void addParticles(final Simulator simulator, final int particles)
     {
         final Vect3D center = new Vect3D();
         for (int i = 0; i < particles; i++)
@@ -96,7 +102,10 @@ public class TextSimulation
         x_max = y_max = z_max = 1000;
 
         final World world = new SimpleMap(x_min, x_max, y_min, y_max, z_min, z_max);
-        final BroadPhase collider = new ArrayGrid2D((short) x_min, (short) x_max, (short) y_min, (short) y_max,
+        final BroadPhase collider = new ArrayGrid2D((short) x_min,
+                                                    (short) x_max,
+                                                    (short) y_min,
+                                                    (short) y_max,
                                                     (short) 10);
         final Simulator simulator = new Simulator();
         simulator.setWorld(world);

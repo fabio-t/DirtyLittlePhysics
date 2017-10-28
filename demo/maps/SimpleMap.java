@@ -1,29 +1,29 @@
 package maps;
 
-import maps.cells.FluidCell;
-import maps.cells.SolidCell;
-import utils.ImmutableVect3D;
-import utils.Vect3D;
 import collision.Collider;
 import collision.Static;
 import engine.Particle;
 import environment.Forces;
 import environment.World;
+import maps.cells.FluidCell;
+import maps.cells.SolidCell;
+import utils.ImmutableVect3D;
+import utils.Vect3D;
 
-/**
- * Copyright 2015 Fabio Ticconi
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Copyright 2015 Fabio Ticconi
+  <p>
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  <p>
+  http://www.apache.org/licenses/LICENSE-2.0
+  <p>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 
 /**
@@ -31,7 +31,7 @@ import environment.World;
  * so that both ground and fluids can be used.
  * Cells are inherently flyweight: only three Cell objects are instantiated,
  * for any environment size.
- * 
+ *
  * @author Fabio Ticconi
  */
 public class SimpleMap implements World
@@ -40,16 +40,12 @@ public class SimpleMap implements World
     private static final FluidCell air    = new FluidCell(FluidCell.AIR_DENSITY);
     private static final SolidCell ground = new SolidCell();
 
-    private final Vect3D           min;
-    private final Vect3D           max;
+    private final Vect3D min;
+    private final Vect3D max;
 
-    private ImmutableVect3D        gravity;
+    private ImmutableVect3D gravity;
 
-    public SimpleMap(final int x_min,
-                     final int x_max,
-                     final int y_min,
-                     final int y_max,
-                     final int z_min,
+    public SimpleMap(final int x_min, final int x_max, final int y_min, final int y_max, final int z_min,
                      final int z_max)
     {
         min = new Vect3D(x_min, y_min, z_min);
@@ -87,31 +83,30 @@ public class SimpleMap implements World
     }
 
     /**
-     * Sets the gravity as an <b>acceleration</b>
-     * vector.<br />
-     * Example: for Earth, the vector would be (0, 0, -9.81).
-     * Incidentally, this is also the default value is
-     * this method is not called.
-     * 
-     * @param gravity
-     *            an {@link ImmutableVect3D} that will
-     *            overwrite the current gravity
-     */
-    @Override
-    public void setGravity(final ImmutableVect3D gravity)
-    {
-        this.gravity = gravity;
-    }
-
-    /**
      * Returns a copy of the gravity vector.
-     * 
+     *
      * @return gravity
      */
     @Override
     public ImmutableVect3D getGravity()
     {
         return gravity;
+    }
+
+    /**
+     * Sets the gravity as an <b>acceleration</b>
+     * vector.<br />
+     * Example: for Earth, the vector would be (0, 0, -9.81).
+     * Incidentally, this is also the default value is
+     * this method is not called.
+     *
+     * @param gravity an {@link ImmutableVect3D} that will
+     *                overwrite the current gravity
+     */
+    @Override
+    public void setGravity(final ImmutableVect3D gravity)
+    {
+        this.gravity = gravity;
     }
 
     /*
@@ -123,7 +118,7 @@ public class SimpleMap implements World
     public void process(final Particle p, final double dt)
     {
         final Vect3D center = p.getCenter();
-        final Vect3D force = p.getForce();
+        final Vect3D force  = p.getForce();
 
         // here we have a simple non-toroidal world,
         // so if we cross the boundary, the position is
@@ -138,7 +133,7 @@ public class SimpleMap implements World
         // Note: normally this would only make sense for the "z" dimension,
         // but who are we to limit your creativity?
         final double buoyancy = cell.getBuoyancy(p);
-        final Vect3D gForce = new Vect3D(gravity).mul(buoyancy * p.getMass());
+        final Vect3D gForce   = new Vect3D(gravity).mul(buoyancy * p.getMass());
 
         // many kind of environmental force
         // could be applied to the particle,
@@ -168,7 +163,7 @@ public class SimpleMap implements World
         // Note: normally this would only make sense for the "z" dimension,
         // but who are we to limit your creativity?
         final double buoyancy = cell.getBuoyancy(p);
-        final Vect3D force = new Vect3D(gravity).mul(buoyancy * p.getMass());
+        final Vect3D force    = new Vect3D(gravity).mul(buoyancy * p.getMass());
 
         // many kind of environmental force
         // could be applied to the particle,

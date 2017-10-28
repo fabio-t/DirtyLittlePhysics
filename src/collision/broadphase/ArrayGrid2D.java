@@ -1,45 +1,45 @@
-/**
- * Copyright 2014 Fabio Ticconi
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Copyright 2014 Fabio Ticconi
+  <p>
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  <p>
+  http://www.apache.org/licenses/LICENSE-2.0
+  <p>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 package collision.broadphase;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import utils.Vect3D;
 import collision.BroadPhase;
 import collision.Static;
+import utils.Vect3D;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A ArrayGrid2D implementation that inserts 3-dimensional
  * objects into 1D maps.cells, but only using two components.
  * This allows for fast broad-phase collision detection.
- * 
+ *
  * @author Fabio Ticconi
  */
 public class ArrayGrid2D implements BroadPhase
 {
-    int                 cellSize;
-    double              invCellSize;
+    private final int    cellSize;
+    private final double invCellSize;
 
-    int                 rows;
-    int                 cols;
+    private final int rows;
+    private final int cols;
 
-    int                 offset;
+    private final int offset;
 
-    ArrayList<Static>[] cells;
+    private final ArrayList<Static>[] cells;
 
     /**
      * Creates a grid with the given dimensions
@@ -51,10 +51,10 @@ public class ArrayGrid2D implements BroadPhase
      * dimension, so that a "cell" actually represents all objects
      * in a specific 3D column in the world. The assumption is that
      * underground and overground objects are rare).
-     * 
+     * <p>
      * <br />
      * <br />
-     * 
+     * <p>
      * Note how the dimensions of the world are short variables.
      * With big enough cells a short is large enough, and it doesn't
      * require an hash function. If you hit a limit
@@ -64,9 +64,8 @@ public class ArrayGrid2D implements BroadPhase
      * will be slightly trickier than here. An excellent source of
      * information in case you want to go down that route is
      * Ericson, "Real-time collision detection".
-     * 
-     * @param cellSize
-     *            the length of one (square) cell
+     *
+     * @param cellSize the length of one (square) cell
      */
     @SuppressWarnings("unchecked")
     public ArrayGrid2D(final short x_min, final short x_max, final short y_min, final short y_max, final short cellSize)
@@ -89,7 +88,7 @@ public class ArrayGrid2D implements BroadPhase
     /**
      * Add all Statics in input to the respective
      * maps.cells.
-     * 
+     *
      * @param Objects
      */
     public void addAll(final Static... Objects)
@@ -100,7 +99,7 @@ public class ArrayGrid2D implements BroadPhase
 
     /**
      * Add all Statics in input to the respective maps.cells.
-     * 
+     *
      * @param Objects
      */
     public void addAll(final List<Static> Objects)
@@ -111,8 +110,8 @@ public class ArrayGrid2D implements BroadPhase
 
     /**
      * Add a single Static to its cell.
-     * 
-     * @param p
+     *
+     * @param s
      */
     @Override
     public void add(final Static s)
@@ -131,7 +130,7 @@ public class ArrayGrid2D implements BroadPhase
         // System.out.println("s: " + s + " -> " + index);
 
         if (cells[index] == null)
-            cells[index] = new ArrayList<Static>();
+            cells[index] = new ArrayList<>();
 
         cells[index].add(s);
     }
@@ -155,8 +154,8 @@ public class ArrayGrid2D implements BroadPhase
     /**
      * Returns all Statics overlapping with
      * the given object.
-     * 
-     * @param p
+     *
+     * @param b
      */
     public List<Static> getCollisions(final Static b)
     {
@@ -164,7 +163,7 @@ public class ArrayGrid2D implements BroadPhase
 
         final List<Static> objects = getObjectsAround(index);
 
-        final ArrayList<Static> collidingObjects = new ArrayList<Static>(objects.size());
+        final ArrayList<Static> collidingObjects = new ArrayList<>(objects.size());
 
         for (final Static obj : objects)
             if (obj.intersects(b))
@@ -182,7 +181,7 @@ public class ArrayGrid2D implements BroadPhase
 
         final List<Static> objects = getObjectsAround(index);
 
-        final ArrayList<Static> collidingObjects = new ArrayList<Static>(objects.size());
+        final ArrayList<Static> collidingObjects = new ArrayList<>(objects.size());
 
         for (final Static obj : objects)
             if (obj.intersects(p))
@@ -199,16 +198,10 @@ public class ArrayGrid2D implements BroadPhase
     @Override
     public List<Static> getPossibleCollisions(final Vect3D p)
     {
-        final int index = getIndex(p);
-
-        // System.out.println("p: " + p + " -> " + index);
-
-        final List<Static> objects = getObjectsAround(index);
-
-        return objects;
+        return getObjectsAround(getIndex(p));
     }
 
-    public List<Static> getObjectsAround(final int index)
+    private List<Static> getObjectsAround(final int index)
     {
         final int x = index / rows;
         final int y = index % rows;
@@ -217,7 +210,7 @@ public class ArrayGrid2D implements BroadPhase
         int tempy;
         int temp;
 
-        final ArrayList<Static> objects = new ArrayList<Static>();
+        final ArrayList<Static> objects = new ArrayList<>();
 
         for (int i = -1; i <= 1; i++)
         {

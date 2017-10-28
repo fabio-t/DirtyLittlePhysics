@@ -1,32 +1,47 @@
-/**
- * Copyright 2015 Fabio Ticconi
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/*
+  Copyright 2015 Fabio Ticconi
+  <p>
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  <p>
+  http://www.apache.org/licenses/LICENSE-2.0
+  <p>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  <p>
+  Taken from: http://www.java-gaming.org/index.php?topic=26885.0
+  and adapted.
 
-/**
+  @author Fabio Ticconi
+ * <p>
  * Taken from: http://www.java-gaming.org/index.php?topic=26885.0
  * and adapted.
- * 
  * @author Fabio Ticconi
  */
 
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.RenderingHints;
-import java.awt.Toolkit;
+/*
+  Taken from: http://www.java-gaming.org/index.php?topic=26885.0
+  and adapted.
+
+  @author Fabio Ticconi
+ */
+
+import collision.BroadPhase;
+import collision.Static;
+import collision.broadphase.ArrayGrid2D;
+import engine.Particle;
+import engine.Simulator;
+import maps.Cell;
+import maps.SimpleMap;
+import shapes.Box;
+import utils.Vect3D;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Ellipse2D;
@@ -35,44 +50,27 @@ import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import javax.swing.JFrame;
-
-import maps.Cell;
-import maps.SimpleMap;
-import shapes.Box;
-import utils.Vect3D;
-import collision.BroadPhase;
-import collision.Static;
-import collision.broadphase.ArrayGrid2D;
-import engine.Particle;
-import engine.Simulator;
-
-public class Demo2D extends JFrame
+class Demo2D extends JFrame
 {
-    private static final long                     serialVersionUID = -6027400479565797010L;
+    private static final long serialVersionUID = -6027400479565797010L;
 
-    private static boolean                        VERBOSE          = false;
+    private static final boolean VERBOSE = false;
 
-    private final ArrayList<Particle>             particles        = new ArrayList<Particle>(500);
-    private final ConcurrentLinkedQueue<Particle> newParticles     = new ConcurrentLinkedQueue<Particle>();
+    private final ArrayList<Particle>             particles    = new ArrayList<>(500);
+    private final ConcurrentLinkedQueue<Particle> newParticles = new ConcurrentLinkedQueue<>();
 
-    private final ArrayList<Static>               objects          = new ArrayList<Static>(500);
-    private final ConcurrentLinkedQueue<Static>   newObjects       = new ConcurrentLinkedQueue<Static>();
+    private final ArrayList<Static>             objects    = new ArrayList<>(500);
+    private final ConcurrentLinkedQueue<Static> newObjects = new ConcurrentLinkedQueue<>();
+    private final Canvas     render;
+    private final Simulator  simulator;
+    private final int        width;
+    private final int        height;
+    private final SimpleMap  world;
+    private final BroadPhase collider;
+    private final int        NUM_PARTICLES;
+    private BufferStrategy bufferstrat = null;
 
-    private BufferStrategy                        bufferstrat      = null;
-    private final Canvas                          render;
-
-    private final Simulator                       simulator;
-
-    private final int                             width;
-    private final int                             height;
-
-    private final SimpleMap                       world;
-    private final BroadPhase                      collider;
-
-    private final int                             NUM_PARTICLES;
-
-    public Demo2D(final int width, final int height, final String title)
+    private Demo2D(final int width, final int height, final String title)
     {
         super();
         setTitle(title);
@@ -85,7 +83,7 @@ public class Demo2D extends JFrame
         render = new Canvas();
         render.setIgnoreRepaint(true);
         int nHeight = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
-        int nWidth = (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+        int nWidth  = (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
         nHeight /= 2;
         nWidth /= 2;
 
@@ -109,7 +107,14 @@ public class Demo2D extends JFrame
         simulator.setBroadPhase(collider);
     }
 
-    public Vect3D transformToSim(final Point p)
+    public static void main(final String[] args)
+    {
+        final Demo2D window = new Demo2D(1024, 768, "Particles: ");
+        window.pollInput();
+        window.loop();
+    }
+
+    private Vect3D transformToSim(final Point p)
     {
         // top left corner is (0,0)
         // bottom right corner is (width,height)
@@ -125,7 +130,7 @@ public class Demo2D extends JFrame
         return newP;
     }
 
-    public Vect3D transformToGraphics(final Vect3D p)
+    private Vect3D transformToGraphics(final Vect3D p)
     {
         // top left corner is (-width/2,height/2)
         // bottom right corner is (width/2,-height/2)
@@ -141,7 +146,7 @@ public class Demo2D extends JFrame
         return newP;
     }
 
-    public void addParticle()
+    private void addParticle()
     {
         final Point pos = render.getMousePosition();
 
@@ -167,7 +172,7 @@ public class Demo2D extends JFrame
         }
     }
 
-    public void addBox()
+    private void addBox()
     {
         final Point pos = render.getMousePosition();
 
@@ -188,7 +193,7 @@ public class Demo2D extends JFrame
         }
     }
 
-    public void pollInput()
+    private void pollInput()
     {
         render.addMouseListener(new MouseListener()
         {
@@ -233,7 +238,7 @@ public class Demo2D extends JFrame
     private void processInput()
     {
         final Particle p = newParticles.poll();
-        final Static o = newObjects.poll();
+        final Static   o = newObjects.poll();
 
         if (o != null)
         {
@@ -248,11 +253,11 @@ public class Demo2D extends JFrame
         }
     }
 
-    public void loop()
+    private void loop()
     {
-        final double FPS = 60.0;
+        final double FPS           = 40.0;
         final double frameDuration = 1000.0 / FPS;
-        final double dt = frameDuration / 1000.0;
+        final double dt            = frameDuration / 1000.0;
 
         double previousTime = System.currentTimeMillis();
         double currentTime;
@@ -281,7 +286,7 @@ public class Demo2D extends JFrame
         }
     }
 
-    public void render()
+    private void render()
     {
         do
         {
@@ -295,13 +300,17 @@ public class Demo2D extends JFrame
                 g2d.fill(air);
 
                 g2d.setColor(Color.blue);
-                final Rectangle2D.Double water = new Rectangle2D.Double(0, render.getHeight() / 2,
-                                                                        render.getWidth() / 2, render.getHeight());
+                final Rectangle2D.Double water = new Rectangle2D.Double(0,
+                                                                        render.getHeight() / 2,
+                                                                        render.getWidth() / 2,
+                                                                        render.getHeight());
                 g2d.fill(water);
 
                 g2d.setColor(Color.black);
-                final Rectangle2D.Double ground = new Rectangle2D.Double(render.getWidth() / 2, render.getHeight() / 2,
-                                                                         render.getWidth(), render.getHeight());
+                final Rectangle2D.Double ground = new Rectangle2D.Double(render.getWidth() / 2,
+                                                                         render.getHeight() / 2,
+                                                                         render.getWidth(),
+                                                                         render.getHeight());
                 g2d.fill(ground);
 
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -316,19 +325,19 @@ public class Demo2D extends JFrame
         } while (bufferstrat.contentsLost());
     }
 
-    public void renderParticles(final Graphics2D g2d)
+    private void renderParticles(final Graphics2D g2d)
     {
         for (final Particle p : particles)
             renderParticle(g2d, p);
     }
 
-    public void renderBoxes(final Graphics2D g2d)
+    private void renderBoxes(final Graphics2D g2d)
     {
         for (final Box b : objects)
             renderBox(g2d, b);
     }
 
-    public void renderParticle(final Graphics2D g, final Particle p)
+    private void renderParticle(final Graphics2D g, final Particle p)
     {
         final Graphics2D g2d = (Graphics2D) g.create();
 
@@ -338,8 +347,8 @@ public class Demo2D extends JFrame
 
         final Vect3D newPoint = transformToGraphics(p.getCenter());
 
-        final double x = newPoint.x - radius;
-        final double z = newPoint.z - radius;
+        final double x        = newPoint.x - radius;
+        final double z        = newPoint.z - radius;
         final double diameter = radius * 2;
 
         if (VERBOSE)
@@ -348,20 +357,9 @@ public class Demo2D extends JFrame
 
             final String celltype = c.getClass().getName();
 
-            System.out.println("rendering particle (" +
-                               celltype +
-                               "): x:" +
-                               x +
-                               ", z:" +
-                               z +
-                               ", realx:" +
-                               p.getCenter().x +
-                               ", realz:" +
-                               p.getCenter().z +
-                               ", m: " +
-                               p.getMass() +
-                               ", d:" +
-                               p.getDensity());
+            System.out.println(
+                "rendering particle (" + celltype + "): x:" + x + ", z:" + z + ", realx:" + p.getCenter().x +
+                ", realz:" + p.getCenter().z + ", m: " + p.getMass() + ", d:" + p.getDensity());
         }
 
         final Ellipse2D.Double circle = new Ellipse2D.Double(x, z, diameter, diameter);
@@ -370,14 +368,14 @@ public class Demo2D extends JFrame
         // g2d.dispose();
     }
 
-    public void renderBox(final Graphics2D g, final Box b)
+    private void renderBox(final Graphics2D g, final Box b)
     {
         final Graphics2D g2d = (Graphics2D) g.create();
 
         g2d.setColor(Color.red);
 
         final Vect3D maxExtent = new Vect3D(b.getExtent());
-        final Vect3D newPoint = transformToGraphics(b.getCenter());
+        final Vect3D newPoint  = transformToGraphics(b.getCenter());
 
         final double x = newPoint.x - maxExtent.x;
         final double z = newPoint.z - maxExtent.z;
@@ -389,29 +387,14 @@ public class Demo2D extends JFrame
 
             final String celltype = c.getClass().getName();
 
-            System.out.println("rendering static object (" +
-                               celltype +
-                               "): x:" +
-                               x +
-                               ", z:" +
-                               z +
-                               ", realx:" +
-                               b.getCenter().x +
-                               ", realz:" +
-                               b.getCenter().z +
-                               ")");
+            System.out.println(
+                "rendering static object (" + celltype + "): x:" + x + ", z:" + z + ", realx:" + b.getCenter().x +
+                ", realz:" + b.getCenter().z + ")");
         }
 
         final Rectangle2D.Double rect = new Rectangle2D.Double(x, z, maxExtent.x, maxExtent.z);
         g2d.fill(rect);
 
         // g2d.dispose();
-    }
-
-    public static void main(final String[] args)
-    {
-        final Demo2D window = new Demo2D(1024, 768, "Particles: ");
-        window.pollInput();
-        window.loop();
     }
 }
