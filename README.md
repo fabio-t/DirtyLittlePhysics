@@ -5,7 +5,7 @@ A small particle physics engine, built to be easy to use, efficient but up to a 
 
 Will be my little dirty physics engine for games that don't need rigid body physics and most of the stuff that the real physics engines provide :)
 
-##Features
+## Features
 
 * 3D Particle physics simulator, simple and efficient (public fields, compact array automatically resizing if necessary)
 * Verlet Velocity integrator for stable simulations even with complex position- and velocity-specific forces
