@@ -17,7 +17,6 @@
  * @author Fabio Ticconi
  */
 /**
- *
  * @author Fabio Ticconi
  */
 package maps.cells;

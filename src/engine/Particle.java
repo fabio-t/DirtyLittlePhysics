@@ -45,8 +45,8 @@ public class Particle extends Sphere
     final   Vect3D vel;
     final   Vect3D acc;
     final   Vect3D force;
-    private double mass;
     double invmass;
+    private double mass;
     private double density;
     private double bounciness;
     private double friction;

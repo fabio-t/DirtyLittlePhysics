@@ -2,9 +2,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.fabioticconi</groupId>
+    <groupId>com.github.fabio-t</groupId>
     <artifactId>DirtyLittlePhysics</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
 
     <name>DirtyLittlePhysics</name>
 
@@ -74,9 +74,9 @@
     </build>
 
     <scm>
-        <connection>scm:git:git@github.com:fabioticconi/DirtyLittlePhysics.git</connection>
-        <url>scm:git:git@github.com:fabioticconi/DirtyLittlePhysics.git</url>
-        <developerConnection>scm:git:git@github.com:fabioticconi/DirtyLittlePhysics.git</developerConnection>
+        <connection>scm:git:git@github.com:fabio-t/DirtyLittlePhysics.git</connection>
+        <url>scm:git:git@github.com:fabio-t/DirtyLittlePhysics.git</url>
+        <developerConnection>scm:git:git@github.com:fabio-t/DirtyLittlePhysics.git</developerConnection>
         <tag>0.1</tag>
     </scm>
 
